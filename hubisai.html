@@ -42,12 +42,15 @@
                 <option value="vi">🇻🇳 Tiếng Việt</option>
             </select>
             <div class="nav-links" id="navLinks">
-                <span class="credits-badge"><i class="fas fa-coins"></i> <span id="creditDisplay">25000</span> HubiSai</span>
+                <span class="credits-badge"><i class="fas fa-coins"></i> <span id="creditDisplay">0</span> HubiSai</span>
                 <a href="auth/login.html" class="btn-auth" id="loginBtn">Connexion</a>
                 <a href="auth/signup.html" class="btn-auth gold" id="signupBtn">S'inscrire</a>
                 <a href="auth/profile.html" class="btn-auth" id="profileBtn" style="display:none;">Mon compte</a>
+                <a href="#" id="logoutBtn" style="display:none;">Déconnexion</a>
             </div>
-            <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
+            <button class="menu-toggle" id="menuToggle">
+                <span></span><span></span><span></span>
+            </button>
         </div>
     </nav>
 
@@ -58,7 +61,7 @@
             <p class="subtitle">Analyse multicritères • Contexte championnat • Crédits HubiSai</p>
         </header>
 
-        <!-- Section 0 : Choix du type d'analyse (NOUVEAU) -->
+        <!-- Section 0 : Choix du type d'analyse -->
         <div class="section">
             <h2>🎯 Type d'analyse / pronostic</h2>
             <div class="analysis-selector">
@@ -221,6 +224,8 @@
         </footer>
     </div>
 
+    <!-- Chargement de Supabase puis du script principal -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="hubisai.js"></script>
 </body>
 </html>
