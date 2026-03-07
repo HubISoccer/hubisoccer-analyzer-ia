@@ -1,4 +1,4 @@
-// ========== HUBISAI.JS – LOGIQUE COMPLÈTE ==========
+// ========== HUBISAI.JS – VERSION COMPLÈTE AVEC COÛTS VARIABLES ==========
 
 // -------------------- DONNÉES DES COMPÉTITIONS --------------------
 const competitionsData = {
@@ -63,33 +63,41 @@ const competitionsData = {
 };
 
 // -------------------- GESTION DES CRÉDITS --------------------
-let credit = 0; // Valeur initiale (sera chargée depuis localStorage)
-const CREDIT_PER_RECHARGE = 25000; // Pour l'admin, on mettra à jour après authentification
+let credit = 25000; // Pour toi l'admin
+const CREDIT_KEY = 'hubisai_credit';
+
+// Tableau des coûts par type d'analyse
+const analysisCosts = {
+    simple: 0.5,
+    dc: 1,
+    buts05: 1,
+    buts15: 1,
+    buts25: 1,
+    totalTirs: 1.5,
+    combo: 2,
+    full: 3
+};
 
 function initCredits() {
-    // Simule un utilisateur : si aucun crédit enregistré, on donne 25000 (pour admin)
-    // Dans la vraie app, on récupérera depuis Supabase
-    const stored = localStorage.getItem('hubisai_credit');
+    const stored = localStorage.getItem(CREDIT_KEY);
     if (stored) {
-        credit = parseInt(stored);
+        credit = parseFloat(stored);
     } else {
-        credit = 25000; // Admin par défaut
-        localStorage.setItem('hubisai_credit', credit);
+        credit = 25000;
+        localStorage.setItem(CREDIT_KEY, credit);
     }
-    document.getElementById('creditDisplay').textContent = credit;
+    document.getElementById('creditDisplay').textContent = credit.toFixed(1);
 }
 
 function updateCreditDisplay() {
-    document.getElementById('creditDisplay').textContent = credit;
-    localStorage.setItem('hubisai_credit', credit);
+    document.getElementById('creditDisplay').textContent = credit.toFixed(1);
+    localStorage.setItem(CREDIT_KEY, credit);
 }
 
-// Vérifier si assez de crédits
 function hasEnoughCredit(cost) {
     return credit >= cost;
 }
 
-// Débiter
 function debitCredit(cost) {
     if (credit >= cost) {
         credit -= cost;
@@ -100,12 +108,28 @@ function debitCredit(cost) {
 }
 
 // Rechargement (simulé)
-document.getElementById('rechargeBtn')?.addEventListener('click', () => {
-    // Ici, rediriger vers FedaPay ou autre
-    alert("Redirection vers FedaPay pour recharger (simulation)");
-    // Après paiement, on ajouterait les crédits
-    // Exemple : credit += 25000; updateCreditDisplay();
+document.addEventListener('click', function(e) {
+    if (e.target.closest('#rechargeBtn')) {
+        alert("Redirection vers FedaPay pour recharger (simulation)");
+        // Logique de paiement à intégrer plus tard
+    }
 });
+
+// -------------------- SÉLECTION DU TYPE D'ANALYSE --------------------
+const radioAnalysis = document.querySelectorAll('input[name="analysisType"]');
+const costDisplay = document.getElementById('costDisplay');
+
+function updateCostDisplay() {
+    const selected = document.querySelector('input[name="analysisType"]:checked');
+    if (!selected) return;
+    const cost = analysisCosts[selected.value] || 0.5;
+    costDisplay.innerHTML = `Coût de l'analyse sélectionnée : <strong>${cost} HubiSai</strong>`;
+}
+
+radioAnalysis.forEach(radio => {
+    radio.addEventListener('change', updateCostDisplay);
+});
+updateCostDisplay(); // Initialisation
 
 // -------------------- GESTION DES COMPÉTITIONS --------------------
 const countrySelect = document.getElementById('countrySelect');
@@ -134,7 +158,7 @@ compSelect.addEventListener('change', function() {
     stakesDisplay.textContent = stakes.toFixed(1);
 });
 
-// -------------------- ALGORITHME DE CALCUL --------------------
+// -------------------- ALGORITHME DE CALCUL AMÉLIORÉ --------------------
 function calculatePrediction() {
     // Récupération des valeurs
     const min = parseInt(document.getElementById('min').value) || 1;
@@ -142,38 +166,27 @@ function calculatePrediction() {
     const [bA, bB] = score.split('-').map(Number);
     const stakes = parseFloat(stakesDisplay.textContent) || 1.0;
 
-    // Stats live
     const tA = parseInt(document.getElementById('tA').value) || 0;
     const tB = parseInt(document.getElementById('tB').value) || 0;
     const tcA = parseInt(document.getElementById('tcA').value) || 0;
     const tcB = parseInt(document.getElementById('tcB').value) || 0;
     const adA = parseInt(document.getElementById('adA').value) || 0;
     const adB = parseInt(document.getElementById('adB').value) || 0;
-
-    // Stats pré-match
     const rankA = parseInt(document.getElementById('rankA').value) || 10;
     const rankB = parseInt(document.getElementById('rankB').value) || 10;
     const formA = parseInt(document.getElementById('formA').value) || 3;
     const formB = parseInt(document.getElementById('formB').value) || 3;
 
-    // --- Indice de puissance live ---
+    // Indices de puissance
     let ipA = (tcA * 4) + ((tA - tcA) * 1) + (adA * 0.7);
     let ipB = (tcB * 4) + ((tB - tcB) * 1) + (adB * 0.7);
-
-    // Bonus classement
     let rankBonusA = (rankB - rankA) * 0.5;
     let rankBonusB = (rankA - rankB) * 0.5;
+    let totalPowerA = (ipA + (formA * 2) + rankBonusA) * stakes;
+    let totalPowerB = (ipB + (formB * 2) + rankBonusB) * stakes;
 
-    let totalPowerA = ipA + (formA * 2) + rankBonusA;
-    let totalPowerB = ipB + (formB * 2) + rankBonusB;
-
-    // Application de l'enjeu (les équipes réagissent à la pression)
-    totalPowerA *= stakes;
-    totalPowerB *= stakes;
-
-    // --- DOUBLE CHANCE ---
-    let dc = "";
-    let reasonDC = "";
+    // Double Chance
+    let dc = "", reasonDC = "";
     if (totalPowerA > totalPowerB * 1.3) {
         dc = "1X";
         reasonDC = "L'équipe A domine nettement.";
@@ -185,11 +198,9 @@ function calculatePrediction() {
         reasonDC = "Match très serré, le nul improbable.";
     }
 
-    // --- PRÉDICTION BUTS ---
+    // Prédiction Buts
     let buts = "";
-    let dangerTotal = (tcA + tcB) / min; // tirs cadrés par minute
-    let totalScore = bA + bB;
-
+    let dangerTotal = (tcA + tcB) / min;
     if (dangerTotal > 0.25 || (stakes > 1.5 && min > 70)) {
         buts = "+2,5 Buts";
     } else if (dangerTotal > 0.12) {
@@ -197,10 +208,17 @@ function calculatePrediction() {
     } else if (dangerTotal > 0.06) {
         buts = "+0,5 Buts";
     } else {
-        buts = (totalScore > 2) ? "-3,5 Buts" : "-2,5 Buts";
+        buts = (bA + bB > 2) ? "-3,5 Buts" : "-2,5 Buts";
     }
 
-    return { dc, buts, reasonDC, totalPowerA, totalPowerB };
+    // Total de tirs estimé
+    let totalTirs = tA + tB;
+    let predTirs = "";
+    if (totalTirs > 25) predTirs = "Plus de 25 tirs";
+    else if (totalTirs > 20) predTirs = "Entre 20 et 25 tirs";
+    else predTirs = "Moins de 20 tirs";
+
+    return { dc, buts, predTirs, reasonDC, totalPowerA, totalPowerB };
 }
 
 // -------------------- HISTORIQUE --------------------
@@ -208,9 +226,7 @@ let history = [];
 
 function loadHistory() {
     const stored = localStorage.getItem('hubisai_history');
-    if (stored) {
-        history = JSON.parse(stored);
-    }
+    if (stored) history = JSON.parse(stored);
     renderHistory();
 }
 
@@ -225,22 +241,18 @@ function renderHistory() {
         list.innerHTML = '<p class="no-data">Aucun historique.</p>';
         return;
     }
-    let html = '';
-    history.slice().reverse().forEach(h => {
-        html += `
-            <div class="history-item" data-id="${h.id}">
-                <div>
-                    <strong>${h.result}</strong><br>
-                    <small>${new Date(h.date).toLocaleString()}</small>
-                </div>
-                <div>
-                    <button class="win" onclick="setHistoryResult(${h.id}, 'GAGNÉ')">✅</button>
-                    <button class="lose" onclick="setHistoryResult(${h.id}, 'PERDU')">❌</button>
-                </div>
+    list.innerHTML = history.slice().reverse().map(h => `
+        <div class="history-item" data-id="${h.id}">
+            <div>
+                <strong>${h.type} : ${h.result}</strong><br>
+                <small>${new Date(h.date).toLocaleString()}</small>
             </div>
-        `;
-    });
-    list.innerHTML = html;
+            <div>
+                <button onclick="setHistoryResult(${h.id}, 'GAGNÉ')">✅</button>
+                <button onclick="setHistoryResult(${h.id}, 'PERDU')">❌</button>
+            </div>
+        </div>
+    `).join('');
 }
 
 window.setHistoryResult = function(id, status) {
@@ -249,9 +261,10 @@ window.setHistoryResult = function(id, status) {
     renderHistory();
 };
 
-function addHistory(resultText) {
+function addHistory(type, resultText) {
     history.push({
         id: Date.now(),
+        type: type,
         result: resultText,
         date: new Date().toISOString(),
         status: 'Attente'
@@ -262,69 +275,63 @@ function addHistory(resultText) {
 
 // -------------------- BOUTON DE CALCUL --------------------
 document.getElementById('calcBtn').addEventListener('click', function() {
-    // Vérifier les crédits (coût = 1 pour l'instant)
-    if (!hasEnoughCredit(1)) {
-        alert('Crédits insuffisants. Veuillez recharger.');
+    const selectedAnalysis = document.querySelector('input[name="analysisType"]:checked');
+    if (!selectedAnalysis) {
+        alert('Veuillez sélectionner un type d\'analyse.');
+        return;
+    }
+    const analysisType = selectedAnalysis.value;
+    const cost = analysisCosts[analysisType] || 0.5;
+
+    if (!hasEnoughCredit(cost)) {
+        alert(`Crédits insuffisants. Il vous faut ${cost} HubiSai. Veuillez recharger.`);
         return;
     }
 
     const result = calculatePrediction();
-    const resultText = `${result.dc} | ${result.buts}`;
+    let resultText = "";
+    let displayHtml = "<h2>🎯 RÉSULTAT IA HUBISOCCER</h2>";
 
-    // Débiter 1 crédit
-    debitCredit(1);
+    // Construction de l'affichage selon le type choisi
+    if (analysisType === "simple" || analysisType === "combo" || analysisType === "full") {
+        displayHtml += `<div class="res-box"><span class="res-label">Analyse</span><span class="res-val">${result.reasonDC} | Puissance A: ${result.totalPowerA.toFixed(1)} B: ${result.totalPowerB.toFixed(1)}</span></div>`;
+        resultText += `Analyse: ${result.reasonDC}`;
+    }
+    if (analysisType === "dc" || analysisType === "combo" || analysisType === "full") {
+        displayHtml += `<div class="res-box"><span class="res-label">Double Chance</span><span class="res-val">${result.dc}</span></div>`;
+        resultText += ` DC: ${result.dc}`;
+    }
+    if (analysisType === "buts05" || analysisType === "buts15" || analysisType === "buts25" || analysisType === "combo" || analysisType === "full") {
+        displayHtml += `<div class="res-box"><span class="res-label">Prédiction Buts</span><span class="res-val gold">${result.buts}</span></div>`;
+        resultText += ` Buts: ${result.buts}`;
+    }
+    if (analysisType === "totalTirs" || analysisType === "full") {
+        displayHtml += `<div class="res-box"><span class="res-label">Total Tirs</span><span class="res-val">${result.predTirs}</span></div>`;
+        resultText += ` Tirs: ${result.predTirs}`;
+    }
 
-    // Afficher le résultat
+    displayHtml += `<button onclick="saveCurrentResult('${resultText}')" class="btn-small" style="width:100%; margin-top:15px;">💾 ARCHIVER</button>`;
+
+    // Débiter les crédits
+    debitCredit(cost);
+
+    // Afficher
     const resultDiv = document.getElementById('finalResult');
     resultDiv.style.display = 'block';
-    resultDiv.innerHTML = `
-        <h2>🎯 RÉSULTAT IA HUBISOCCER</h2>
-        <div class="res-box">
-            <span class="res-label">DOUBLE CHANCE</span>
-            <span class="res-val">${result.dc}</span>
-        </div>
-        <div class="res-box">
-            <span class="res-label">PRÉDICTION BUTS</span>
-            <span class="res-val accent">${result.buts}</span>
-        </div>
-        <p style="margin-top:15px;"><strong>Analyse :</strong> ${result.reasonDC}</p>
-        <p><strong>Puissances :</strong> A = ${result.totalPowerA.toFixed(1)} | B = ${result.totalPowerB.toFixed(1)}</p>
-        <button onclick="saveCurrentResult('${resultText}')" class="btn-small" style="width:100%; margin-top:10px;">💾 ARCHIVER</button>
-    `;
+    resultDiv.innerHTML = displayHtml;
 });
 
-// Sauvegarder le résultat dans l'historique
 window.saveCurrentResult = function(text) {
-    addHistory(text);
+    const selected = document.querySelector('input[name="analysisType"]:checked');
+    const typeName = selected ? selected.nextElementSibling.innerText.split('-')[0].trim() : 'Analyse';
+    addHistory(typeName, text);
     alert('Pronostic archivé !');
 };
 
-// -------------------- MENU MOBILE (copié du projet principal) --------------------
-document.addEventListener('click', function(e) {
-    const menuToggle = e.target.closest('#menuToggle');
-    if (menuToggle) {
-        e.preventDefault();
-        const navLinks = document.getElementById('navLinks');
-        if (navLinks) {
-            navLinks.classList.toggle('active');
-            menuToggle.classList.toggle('open');
-        }
-        return;
-    }
-    if (!e.target.closest('.nav-links') && !e.target.closest('#menuToggle')) {
-        const navLinks = document.getElementById('navLinks');
-        if (navLinks && navLinks.classList.contains('active')) {
-            navLinks.classList.remove('active');
-            const toggle = document.getElementById('menuToggle');
-            if (toggle) toggle.classList.remove('open');
-        }
-    }
-});
-
-// -------------------- GESTION DE LA LANGUE (simplifiée) --------------------
-document.getElementById('langSelect')?.addEventListener('change', function(e) {
-    // Ici, on pourrait changer la langue, mais pour l'instant on stocke juste
-    localStorage.setItem('hubiLang', e.target.value);
+// -------------------- MENU MOBILE --------------------
+document.getElementById('menuToggle')?.addEventListener('click', function() {
+    document.getElementById('navLinks').classList.toggle('active');
+    this.classList.toggle('open');
 });
 
 // -------------------- INITIALISATION --------------------
