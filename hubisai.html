@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HubISoccer | AI Ultra Predictor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #551B8C;
+            --primary-light: #7e3db0;
+            --primary-dark: #3d1266;
+            --gold: #FFCC00;
+            --gold-dark: #e6b800;
+            --bg-light: #F0F8FF;
+            --white: #ffffff;
+            --dark: #1a1a1a;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+            --shadow: 0 10px 30px rgba(0,0,0,0.05);
+            --shadow-hover: 0 15px 40px rgba(85,27,140,0.15);
+            --transition: all 0.3s ease;
+            --font-main: 'Poppins', sans-serif;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: var(--font-main);
+            background: var(--bg-light);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 5%;
+            background: var(--white);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow);
+            border-bottom: 1px solid var(--light-gray);
+        }
+        .logo-nav { height: 50px; cursor: pointer; transition: var(--transition); }
+        .logo-nav:hover { opacity: 0.8; transform: scale(1.02); }
+        .nav-right { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+        .lang-picker {
+            background: var(--white);
+            color: var(--primary);
+            border: 1px solid var(--light-gray);
+            padding: 8px 12px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            outline: none;
+            transition: var(--transition);
+        }
+        .lang-picker:hover { border-color: var(--gold); }
+        .menu-toggle {
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 30px;
+            height: 21px;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .menu-toggle span {
+            display: block;
+            width: 100%;
+            height: 3px;
+            background-color: var(--primary);
+            border-radius: 3px;
+            transition: var(--transition);
+        }
+        .nav-links { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+        .nav-links a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            position: relative;
+        }
+        .nav-links a:hover { color: var(--gold); }
+        .btn-auth {
+            padding: 8px 18px;
+            border-radius: 30px;
+            border: 1px solid var(--primary);
+            background: transparent;
+            color: var(--primary);
+            transition: var(--transition);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .btn-auth:hover { background: var(--primary); color: white; }
+        .btn-auth.gold {
+            background: var(--gold);
+            color: black;
+            border: none;
+        }
+        .btn-auth.gold:hover { background: var(--gold-dark); }
+        .credits-badge {
+            background: var(--primary-light);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 30px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+            flex: 1;
+        }
+        h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+        .section {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--light-gray);
+        }
+        .section h2 {
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+            border-left: 5px solid var(--gold);
+            padding-left: 15px;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+        .grid-2-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--dark);
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--light-gray);
+            border-radius: 10px;
+            font-family: var(--font-main);
+            font-size: 1rem;
+            transition: var(--transition);
+            background: var(--bg-light);
+        }
+        input:focus, select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(85,27,140,0.1);
+            background: white;
+        }
+        .box {
+            background: #f8fafc;
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid var(--light-gray);
+        }
+        .team-header {
+            font-weight: 700;
+            text-align: center;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            color: white;
+        }
+        .home-h { background: var(--primary); }
+        .away-h { background: var(--gold); color: black; }
+        .main-btn {
+            width: 100%;
+            padding: 18px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 10px 20px rgba(85,27,140,0.2);
+            margin: 20px 0;
+        }
+        .main-btn:hover {
+            background: var(--primary-light);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(85,27,140,0.3);
+        }
+        .res-card {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+        .res-box {
+            background: rgba(255,255,255,0.15);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .res-label { font-weight: 300; font-size: 0.9rem; }
+        .res-val { font-size: 1.5rem; font-weight: 800; }
+        .history-item {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 5px solid var(--gold);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .history-item button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: var(--transition);
+        }
+        .history-item button:hover { background: rgba(0,0,0,0.05); }
+        footer {
+            background: #0a0a0a;
+            color: var(--white);
+            padding: 40px 5% 20px;
+            text-align: center;
+        }
+        .compliance-badges {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .badge-item {
+            background: rgba(255,255,255,0.05);
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            color: var(--gold);
+            border: 1px solid rgba(255,204,0,0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .contact-box { margin-bottom: 30px; }
+        .contact-item {
+            color: var(--gold);
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        .contact-item:hover { color: white; }
+        .legal p {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.5);
+            margin: 5px 0;
+        }
+        @media (max-width: 768px) {
+            .grid-2-2 { grid-template-columns: 1fr; }
+            .nav-links { flex-direction: column; align-items: flex-start; }
+            .menu-toggle { display: flex; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="./" class="logo-link">
+            <img src="img/logo-navbar.png" alt="HubISoccer" class="logo-nav">
+        </a>
+        <div class="nav-right">
+            <select class="lang-picker" id="langSelect">
+                <option value="fr">🇫🇷 Français</option>
+                <option value="en">🇺🇸 English</option>
+                <option value="yo">🇳🇬 Yoruba</option>
+                <option value="fon">🇧🇯 Fon</option>
+                <option value="mina">🇹🇬 Mina</option>
+                <option value="lin">🇨🇬 Lingala</option>
+                <option value="wol">🇸🇳 Wolof</option>
+                <option value="diou">🇨🇮 Dioula</option>
+                <option value="ha">🇳🇬 Hausa</option>
+                <option value="sw">🇰🇪 Kiswahili</option>
+                <option value="es">🇪🇸 Español</option>
+                <option value="pt">🇵🇹 Português</option>
+                <option value="de">🇩🇪 Deutsch</option>
+                <option value="it">🇮🇹 Italiano</option>
+                <option value="ar">🇸🇦 العربية</option>
+                <option value="zh">🇨🇳 中文</option>
+                <option value="ru">🇷🇺 Русский</option>
+                <option value="ja">🇯🇵 日本語</option>
+                <option value="tr">🇹🇷 Türkçe</option>
+                <option value="ko">🇰🇷 한국어</option>
+                <option value="hi">🇮🇳 हिन्दी</option>
+                <option value="nl">🇳🇱 Nederlands</option>
+                <option value="pl">🇵🇱 Polski</option>
+                <option value="vi">🇻🇳 Tiếng Việt</option>
+            </select>
+            <div class="nav-links" id="navLinks">
+                <span class="credits-badge"><i class="fas fa-coins"></i> <span id="creditDisplay">2.5</span> HubiSai</span>
+                <a href="auth/login.html" class="btn-auth" id="loginBtn">Connexion</a>
+                <a href="auth/signup.html" class="btn-auth gold" id="signupBtn">S'inscrire</a>
+                <a href="auth/profile.html" class="btn-auth" id="profileBtn" style="display:none;">Mon compte</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <header>
+            <h1>HubISoccer <span style="color:var(--gold)">AI ULTRA</span></h1>
+            <p style="color:var(--gray);">Analyse multicritères & contexte championnat – 25e minute recommandée</p>
+        </header>
+
+        <!-- Système de crédits -->
+        <div class="section" style="text-align:center;">
+            <h2>💰 Votre solde</h2>
+            <p style="font-size:2.5rem; color:var(--primary);"><span id="creditMain">2.5</span> HubiSai</p>
+            <button id="rechargeBtn" class="btn-auth" style="background:var(--gold); color:black;">Recharger 100 FCFA (2.5 crédits)</button>
+        </div>
+
+        <!-- Contexte du match avec sélecteurs dynamiques -->
+        <div class="section">
+            <h2>1. Contexte du Match</h2>
+            <div class="grid-2">
+                <div>
+                    <label>Pays / Zone</label>
+                    <select id="countrySelect">
+                        <option value="">Sélectionnez un pays</option>
+                        <option value="Angleterre">🇬🇧 Angleterre</option>
+                        <option value="Espagne">🇪🇸 Espagne</option>
+                        <option value="Italie">🇮🇹 Italie</option>
+                        <option value="Allemagne">🇩🇪 Allemagne</option>
+                        <option value="France">🇫🇷 France</option>
+                        <option value="Portugal">🇵🇹 Portugal</option>
+                        <option value="Pays-Bas">🇳🇱 Pays-Bas</option>
+                        <option value="Bresil">🇧🇷 Brésil</option>
+                        <option value="Belgique">🇧🇪 Belgique</option>
+                        <option value="Turquie">🇹🇷 Turquie</option>
+                        <option value="Europe">🌍 Europe</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Compétition</label>
+                    <select id="competitionSelect">
+                        <option value="">D'abord choisissez un pays</option>
+                    </select>
+                </div>
+            </div>
+            <div class="grid-2">
+                <div><label>Nom Équipe A (DOM)</label><input type="text" id="nameA" placeholder="Ex: Real Madrid"></div>
+                <div><label>Nom Équipe B (EXT)</label><input type="text" id="nameB" placeholder="Ex: Barça"></div>
+            </div>
+            <div class="grid-2">
+                <div><label>Enjeu (stakes)</label><input type="number" id="stakes" step="0.1" min="0.5" max="3" value="1.0"></div>
+                <div><label>Minute actuelle</label><input type="number" id="min" value="30"></div>
+            </div>
+        </div>
+
+        <!-- État de forme (saison) -->
+        <div class="section">
+            <h2>2. État de forme (Saison)</h2>
+            <div class="grid-2-2">
+                <div class="box">
+                    <div class="team-header home-h">STATS ÉQUIPE A</div>
+                    <div class="grid-2">
+                        <div><label>Classement</label><input type="number" id="rankA"></div>
+                        <div><label>Points</label><input type="number" id="ptsA"></div>
+                    </div>
+                    <div class="grid-2">
+                        <div><label>Buts Marqués</label><input type="number" id="gmA"></div>
+                        <div><label>Buts Encaissés</label><input type="number" id="gaA"></div>
+                    </div>
+                    <label>Forme (6 derniers : V)</label><input type="number" id="formA" max="6" placeholder="0 à 6">
+                </div>
+                <div class="box">
+                    <div class="team-header away-h">STATS ÉQUIPE B</div>
+                    <div class="grid-2">
+                        <div><label>Classement</label><input type="number" id="rankB"></div>
+                        <div><label>Points</label><input type="number" id="ptsB"></div>
+                    </div>
+                    <div class="grid-2">
+                        <div><label>Buts Marqués</label><input type="number" id="gmB"></div>
+                        <div><label>Buts Encaissés</label><input type="number" id="gaB"></div>
+                    </div>
+                    <label>Forme (6 derniers : V)</label><input type="number" id="formB" max="6" placeholder="0 à 6">
+                </div>
+            </div>
+        </div>
+
+        <!-- Données en direct (live) -->
+        <div class="section">
+            <h2>3. Données en Direct (Live)</h2>
+            <div class="grid-2">
+                <div><label>Score (ex: 1-0)</label><input type="text" id="score" value="0-0"></div>
+                <div></div>
+            </div>
+            <div class="grid-2-2">
+                <div class="box">
+                    <div class="team-header home-h">LIVE A</div>
+                    <label>Tirs TOTAUX</label><input type="number" id="tA">
+                    <label>Tirs CADRÉS</label><input type="number" id="tcA">
+                    <label>Corners</label><input type="number" id="cA">
+                    <label>Attaques Dangereuses</label><input type="number" id="adA">
+                </div>
+                <div class="box">
+                    <div class="team-header away-h">LIVE B</div>
+                    <label>Tirs TOTAUX</label><input type="number" id="tB">
+                    <label>Tirs CADRÉS</label><input type="number" id="tcB">
+                    <label>Corners</label><input type="number" id="cB">
+                    <label>Attaques Dangereuses</label><input type="number" id="adB">
+                </div>
+            </div>
+        </div>
+
+        <!-- Type d'analyse sélectionné -->
+        <div class="section">
+            <h2>4. Type d'analyse</h2>
+            <div class="grid-2">
+                <div>
+                    <label>Pronostic souhaité</label>
+                    <select id="analysisType">
+                        <option value="dc">Double Chance (coût: 1.5)</option>
+                        <option value="buts05">+0,5 Buts (coût: 1)</option>
+                        <option value="buts15">+1,5 Buts (coût: 1)</option>
+                        <option value="buts25">+2,5 Buts (coût: 1)</option>
+                        <option value="totalTirs">Total Tirs (coût: 2)</option>
+                        <option value="complet">Analyse complète (DC + Buts + Tirs) (coût: 4)</option>
+                    </select>
+                </div>
+                <div style="display: flex; align-items: flex-end;">
+                    <span style="background:var(--primary); color:white; padding:12px 20px; border-radius:10px;">Coût: <span id="analysisCost">1.5</span> HubiSai</span>
+                </div>
+            </div>
+        </div>
+
+        <button class="main-btn" onclick="runAnalysis()">⚡ CALCULER LE PRONOSTIC</button>
+
+        <div id="final-result"></div>
+
+        <div class="section">
+            <h2>📊 Historique des analyses</h2>
+            <div id="historyList"></div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="compliance-badges">
+            <div class="badge-item">Vous aidez à mieux parier</div>
+            <div class="badge-item">Conseils paris sportifs</div>
+        </div>
+        <div class="contact-box">
+            <a href="tel:+2290197208188" class="contact-item">📞 +229 01 97 20 81 88</a>
+            <a href="mailto:contact@hubisoccer.com" class="contact-item">📧 hubisoccer@gmail.com</a>
+        </div>
+        <div class="legal">
+            <p><strong>HubISoccer - The Hub of Inspiration of Soccer</strong></p>
+            <p>RCCM : RB/ABC/24 A 111814 | IFU : 0201910800236</p>
+            <p>© 2026 HubISoccer - Ozawa. Tous droits réservés.</p>
+        </div>
+    </footer>
+
+    <script>
+        // ========== DONNÉES DES COMPÉTITIONS ==========
+        const competitionsData = {
+            "Angleterre": {
+                "Premier League": { stakes: 1.0 },
+                "Championship": { stakes: 1.0 },
+                "FA Cup": { stakes: 1.8 }
+            },
+            "Espagne": {
+                "La Liga": { stakes: 1.0 },
+                "La Liga 2 (Segunda)": { stakes: 1.0 },
+                "Copa del Rey": { stakes: 1.8 }
+            },
+            "Italie": {
+                "Serie A": { stakes: 1.0 },
+                "Serie B": { stakes: 1.0 },
+                "Coppa Italia": { stakes: 1.8 }
+            },
+            "Allemagne": {
+                "Bundesliga": { stakes: 1.0 },
+                "2. Bundesliga": { stakes: 1.0 },
+                "DFB-Pokal": { stakes: 1.8 }
+            },
+            "France": {
+                "Ligue 1": { stakes: 1.0 },
+                "Ligue 2": { stakes: 1.0 },
+                "Coupe de France": { stakes: 1.8 }
+            },
+            "Portugal": {
+                "Primeira Liga": { stakes: 1.0 },
+                "Liga Portugal 2": { stakes: 1.0 },
+                "Taça de Portugal": { stakes: 1.8 }
+            },
+            "Pays-Bas": {
+                "Eredivisie": { stakes: 1.0 },
+                "Eerste Divisie": { stakes: 1.0 },
+                "KNVB Beker": { stakes: 1.8 }
+            },
+            "Bresil": {
+                "Série A (Brasileirão)": { stakes: 1.0 },
+                "Série B": { stakes: 1.0 },
+                "Copa do Brasil": { stakes: 1.8 }
+            },
+            "Belgique": {
+                "Pro League": { stakes: 1.0 },
+                "Challenger Pro League": { stakes: 1.0 },
+                "Coupe de Belgique": { stakes: 1.8 }
+            },
+            "Turquie": {
+                "Süper Lig": { stakes: 1.0 },
+                "TFF 1. Lig": { stakes: 1.0 },
+                "Coupe de Turquie": { stakes: 1.8 }
+            },
+            "Europe": {
+                "UEFA Champions League (Phase de groupes)": { stakes: 1.3 },
+                "UEFA Champions League (Élimination directe)": { stakes: 2.0 },
+                "UEFA Europa League (Phase de groupes)": { stakes: 1.2 },
+                "UEFA Europa League (Élimination directe)": { stakes: 1.8 },
+                "UEFA Conference League (Phase de groupes)": { stakes: 1.1 },
+                "UEFA Conference League (Élimination directe)": { stakes: 1.6 }
+            }
+        };
+
+        // ========== GESTION DES SÉLECTEURS DYNAMIQUES ==========
+        const countrySelect = document.getElementById('countrySelect');
+        const competitionSelect = document.getElementById('competitionSelect');
+        const stakesInput = document.getElementById('stakes');
+
+        countrySelect.addEventListener('change', function() {
+            const country = this.value;
+            competitionSelect.innerHTML = '<option value="">Choisissez une compétition</option>';
+            if (country && competitionsData[country]) {
+                const comps = competitionsData[country];
+                for (let comp in comps) {
+                    let option = document.createElement('option');
+                    option.value = comp;
+                    option.textContent = comp;
+                    competitionSelect.appendChild(option);
+                }
+            }
+            // Réinitialiser le stakes
+            stakesInput.value = 1.0;
+        });
+
+        competitionSelect.addEventListener('change', function() {
+            const country = countrySelect.value;
+            const comp = this.value;
+            if (country && comp && competitionsData[country] && competitionsData[country][comp]) {
+                stakesInput.value = competitionsData[country][comp].stakes;
+            }
+        });
+
+        // ========== SYSTÈME DE CRÉDITS ==========
+        let credits = parseFloat(localStorage.getItem('hubisai_credits')) || 2.5; // 2.5 crédits de départ
+        const creditDisplay = document.getElementById('creditDisplay');
+        const creditMain = document.getElementById('creditMain');
+        const analysisCostSpan = document.getElementById('analysisCost');
+        const analysisTypeSelect = document.getElementById('analysisType');
+
+        function updateCreditsUI() {
+            creditDisplay.textContent = credits.toFixed(2);
+            creditMain.textContent = credits.toFixed(2);
+            localStorage.setItem('hubisai_credits', credits);
+        }
+
+        // Coût selon le type d'analyse
+        analysisTypeSelect.addEventListener('change', function() {
+            const costs = {
+                dc: 1.5,
+                buts05: 1,
+                buts15: 1,
+                buts25: 1,
+                totalTirs: 2,
+                complet: 4
+            };
+            analysisCostSpan.textContent = costs[this.value] || 1.5;
+        });
+
+        // Simulation de recharge
+        document.getElementById('rechargeBtn').addEventListener('click', function() {
+            credits += 2.5; // 100 FCFA = 2.5 crédits
+            updateCreditsUI();
+            alert('Recharge de 2.5 HubiSai effectuée (simulation)');
+        });
+
+        // ========== HISTORIQUE ==========
+        let history = JSON.parse(localStorage.getItem('hubisai_history')) || [];
+
+        function saveToHistory(resultText) {
+            history.push({ id: Date.now(), text: resultText, date: new Date().toLocaleString() });
+            localStorage.setItem('hubisai_history', JSON.stringify(history));
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('historyList');
+            list.innerHTML = '';
+            history.slice().reverse().forEach(h => {
+                list.innerHTML += `
+                    <div class="history-item">
+                        <span><strong>${h.date}</strong> : ${h.text}</span>
+                        <button onclick="deleteHistory(${h.id})"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
+            });
+        }
+
+        window.deleteHistory = function(id) {
+            history = history.filter(h => h.id !== id);
+            localStorage.setItem('hubisai_history', JSON.stringify(history));
+            renderHistory();
+        };
+
+        // ========== FONCTION PRINCIPALE D'ANALYSE ==========
+        window.runAnalysis = function() {
+            const cost = parseFloat(analysisCostSpan.textContent);
+            if (credits < cost) {
+                alert('Crédits insuffisants. Veuillez recharger.');
+                return;
+            }
+
+            // Récupération des valeurs
+            const min = parseInt(document.getElementById('min').value) || 1;
+            const score = document.getElementById('score').value;
+            const [bA, bB] = score.split('-').map(Number);
+            const stakes = parseFloat(stakesInput.value) || 1.0;
+            const tA = parseInt(document.getElementById('tA').value) || 0;
+            const tB = parseInt(document.getElementById('tB').value) || 0;
+            const tcA = parseInt(document.getElementById('tcA').value) || 0;
+            const tcB = parseInt(document.getElementById('tcB').value) || 0;
+            const adA = parseInt(document.getElementById('adA').value) || 0;
+            const adB = parseInt(document.getElementById('adB').value) || 0;
+            const rankA = parseInt(document.getElementById('rankA').value) || 10;
+            const rankB = parseInt(document.getElementById('rankB').value) || 10;
+            const formA = parseInt(document.getElementById('formA').value) || 3;
+            const formB = parseInt(document.getElementById('formB').value) || 3;
+
+            // Calculs de base
+            let ipA = (tcA * 4) + ((tA - tcA) * 1) + (adA * 0.7);
+            let ipB = (tcB * 4) + ((tB - tcB) * 1) + (adB * 0.7);
+            let rankBonusA = (rankB - rankA) * 0.5;
+            let rankBonusB = (rankA - rankB) * 0.5;
+            let totalPowerA = ipA + (formA * 2) + rankBonusA;
+            let totalPowerB = ipB + (formB * 2) + rankBonusB;
+
+            // Logique double chance avec stakes
+            let dc = "";
+            let reasonDC = "";
+            if (totalPowerA * stakes > totalPowerB * 1.2) {
+                dc = "1X";
+                reasonDC = "L'équipe A domine nettement.";
+            } else if (totalPowerB * stakes > totalPowerA * 1.2) {
+                dc = "2X";
+                reasonDC = "L'équipe B a l'avantage.";
+            } else {
+                dc = "12";
+                reasonDC = "Match serré, les deux équipes peuvent l'emporter.";
+            }
+
+            // Logique buts
+            let buts = "";
+            let dangerTotal = (tcA + tcB) / Math.max(min, 1);
+            let totalScore = bA + bB;
+
+            if (dangerTotal > 0.25 || (stakes > 1.5 && min > 70)) {
+                buts = "+2,5 Buts";
+            } else if (dangerTotal > 0.12) {
+                buts = "+1,5 Buts";
+            } else if (dangerTotal > 0.06) {
+                buts = "+0,5 Buts";
+            } else {
+                buts = (totalScore > 2) ? "-3,5 Buts" : "-2,5 Buts";
+            }
+
+            // Total de tirs estimé
+            let totalTirs = tA + tB;
+            let predTirs = totalTirs > 25 ? "Plus de 25 tirs" : (totalTirs > 15 ? "15-25 tirs" : "Moins de 15 tirs");
+
+            // Construction du résultat selon le type d'analyse
+            const analysisType = analysisTypeSelect.value;
+            let resultText = "";
+            if (analysisType === 'dc') {
+                resultText = `Double chance : ${dc} – ${reasonDC}`;
+            } else if (analysisType === 'buts05') {
+                resultText = `Pronostic : ${buts}`;
+            } else if (analysisType === 'buts15') {
+                resultText = `Pronostic : ${buts}`;
+            } else if (analysisType === 'buts25') {
+                resultText = `Pronostic : ${buts}`;
+            } else if (analysisType === 'totalTirs') {
+                resultText = `Total tirs estimé : ${predTirs}`;
+            } else if (analysisType === 'complet') {
+                resultText = `DC: ${dc} | Buts: ${buts} | Tirs: ${predTirs}`;
+            }
+
+            const finalHtml = `
+                <div class="res-card">
+                    <h2 style="color:var(--gold); border:none;">🎯 RÉSULTAT</h2>
+                    <div class="res-box">
+                        <div class="res-label">Pronostic</div>
+                        <div class="res-val">${resultText}</div>
+                    </div>
+                    <p style="background:rgba(255,255,255,0.1); padding:10px; border-radius:5px;">
+                        <b>Analyse :</b> Puissance A: ${totalPowerA.toFixed(1)} | B: ${totalPowerB.toFixed(1)} | Enjeu: ${stakes}
+                    </p>
+                    <button onclick="saveToHistory('${resultText}')" style="background:white; color:var(--primary); font-weight:bold; width:100%; padding:10px; border-radius:5px; border:none; cursor:pointer;">💾 ARCHIVER</button>
+                </div>
+            `;
+
+            document.getElementById('final-result').innerHTML = finalHtml;
+
+            // Débiter les crédits
+            credits -= cost;
+            updateCreditsUI();
+        };
+
+        // Initialisation
+        updateCreditsUI();
+        renderHistory();
+        analysisTypeSelect.dispatchEvent(new Event('change'));
+
+        // Menu mobile simple
+        document.getElementById('menuToggle').addEventListener('click', function() {
+            const navLinks = document.getElementById('navLinks');
+            navLinks.classList.toggle('active');
+        });
+    </script>
+</body>
+</html>
