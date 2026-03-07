@@ -1,9 +1,9 @@
-// ========== HUBISAI.JS – VERSION FINALE AVEC SUPABASE ==========
+// ========== HUBISAI.JS – VERSION FINALE (MENU CORRIGÉ) ==========
 
-// Configuration Supabase (à vérifier)
+// Configuration Supabase
 const supabaseUrl = 'https://hlszrqnrzfvzjwindwpw.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhsc3pycW5yemZ2emp3aW5kd3B3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTQ2NzYsImV4cCI6MjA4ODQ5MDY3Nn0.LXdNt0NWF_MlQy7MTclrdGl-RP7pfxl-xjtysIQEBXU';
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 // -------------------- DONNÉES DES COMPÉTITIONS --------------------
 const competitionsData = {
@@ -72,11 +72,10 @@ let currentUser = null;
 let credits = 0;
 
 async function checkUser() {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await supabaseClient.auth.getUser();
     currentUser = user;
     if (user) {
-        // Charger les crédits depuis la table profiles
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('profiles')
             .select('credits')
             .eq('id', user.id)
@@ -84,7 +83,7 @@ async function checkUser() {
         if (!error && data) {
             credits = data.credits;
         } else {
-            credits = 0; // fallback
+            credits = 0;
         }
         updateCreditDisplay();
         updateMenuForAuth();
@@ -103,19 +102,17 @@ function updateMenuForAuth() {
     const creditsBadge = document.querySelector('.credits-badge');
 
     if (currentUser) {
-        // Connecté
         if (loginBtn) loginBtn.style.display = 'none';
         if (signupBtn) signupBtn.style.display = 'none';
         if (profileBtn) profileBtn.style.display = 'inline-block';
         if (logoutBtn) logoutBtn.style.display = 'inline-block';
         if (creditsBadge) creditsBadge.style.display = 'flex';
     } else {
-        // Non connecté
         if (loginBtn) loginBtn.style.display = 'inline-block';
         if (signupBtn) signupBtn.style.display = 'inline-block';
         if (profileBtn) profileBtn.style.display = 'none';
         if (logoutBtn) logoutBtn.style.display = 'none';
-        if (creditsBadge) creditsBadge.style.display = 'flex'; // afficher 0
+        if (creditsBadge) creditsBadge.style.display = 'flex';
     }
 }
 
@@ -123,15 +120,6 @@ function updateCreditDisplay() {
     const creditSpan = document.getElementById('creditDisplay');
     if (creditSpan) creditSpan.textContent = credits.toFixed(1);
 }
-
-// Déconnexion
-document.addEventListener('click', async (e) => {
-    if (e.target.id === 'logoutBtn') {
-        e.preventDefault();
-        await supabase.auth.signOut();
-        window.location.reload();
-    }
-});
 
 // -------------------- SÉLECTION DU TYPE D'ANALYSE --------------------
 const radioAnalysis = document.querySelectorAll('input[name="analysisType"]');
@@ -153,11 +141,6 @@ function updateCostDisplay() {
     const cost = analysisCosts[selected.value] || 0.5;
     costDisplay.innerHTML = `Coût de l'analyse sélectionnée : <strong>${cost} HubiSai</strong>`;
 }
-
-radioAnalysis.forEach(radio => {
-    radio.addEventListener('change', updateCostDisplay);
-});
-updateCostDisplay();
 
 // -------------------- GESTION DES COMPÉTITIONS --------------------
 const countrySelect = document.getElementById('countrySelect');
@@ -204,7 +187,6 @@ function calculatePrediction() {
     const formA = parseInt(document.getElementById('formA').value) || 3;
     const formB = parseInt(document.getElementById('formB').value) || 3;
 
-    // Indices de puissance
     let ipA = (tcA * 4) + ((tA - tcA) * 1) + (adA * 0.7);
     let ipB = (tcB * 4) + ((tB - tcB) * 1) + (adB * 0.7);
     let rankBonusA = (rankB - rankA) * 0.5;
@@ -212,7 +194,6 @@ function calculatePrediction() {
     let totalPowerA = (ipA + (formA * 2) + rankBonusA) * stakes;
     let totalPowerB = (ipB + (formB * 2) + rankBonusB) * stakes;
 
-    // Double Chance
     let dc = "", reasonDC = "";
     if (totalPowerA > totalPowerB * 1.3) {
         dc = "1X";
@@ -225,7 +206,6 @@ function calculatePrediction() {
         reasonDC = "Match très serré, le nul improbable.";
     }
 
-    // Prédiction Buts
     let buts = "";
     let dangerTotal = (tcA + tcB) / min;
     if (dangerTotal > 0.25 || (stakes > 1.5 && min > 70)) {
@@ -238,7 +218,6 @@ function calculatePrediction() {
         buts = (bA + bB > 2) ? "-3,5 Buts" : "-2,5 Buts";
     }
 
-    // Total de tirs estimé
     let totalTirs = tA + tB;
     let predTirs = "";
     if (totalTirs > 25) predTirs = "Plus de 25 tirs";
@@ -264,7 +243,7 @@ async function debitCredit(cost) {
     }
 
     const newCredits = credits - cost;
-    const { error } = await supabase
+    const { error } = await supabaseClient
         .from('profiles')
         .update({ credits: newCredits })
         .eq('id', currentUser.id);
@@ -283,7 +262,7 @@ async function debitCredit(cost) {
 async function saveAnalysis(type, inputData, result, cost) {
     if (!currentUser) return;
 
-    const { error } = await supabase
+    const { error } = await supabaseClient
         .from('analyses')
         .insert([{
             user_id: currentUser.id,
@@ -296,7 +275,7 @@ async function saveAnalysis(type, inputData, result, cost) {
     if (error) console.error('Erreur sauvegarde analyse:', error);
 }
 
-// -------------------- HISTORIQUE LOCAL (en attendant de charger depuis BDD) --------------------
+// -------------------- HISTORIQUE LOCAL --------------------
 let history = [];
 
 function loadHistory() {
@@ -330,7 +309,6 @@ function renderHistory() {
     `).join('');
 }
 
-// Délégation pour l'historique
 document.getElementById('historyList')?.addEventListener('click', function(e) {
     const btn = e.target.closest('button');
     if (!btn) return;
@@ -378,7 +356,6 @@ document.getElementById('calcBtn').addEventListener('click', async function() {
         return;
     }
 
-    // Récupérer les données saisies
     const inputData = {
         min: document.getElementById('min').value,
         score: document.getElementById('score').value,
@@ -421,18 +398,15 @@ document.getElementById('calcBtn').addEventListener('click', async function() {
 
     displayHtml += `<button id="saveResultBtn" class="btn-small" style="width:100%; margin-top:15px;">💾 ARCHIVER</button>`;
 
-    // Débiter et sauvegarder
     const debited = await debitCredit(cost);
     if (!debited) return;
 
     await saveAnalysis(analysisType, inputData, result, cost);
 
-    // Afficher le résultat
     const resultDiv = document.getElementById('finalResult');
     resultDiv.style.display = 'block';
     resultDiv.innerHTML = displayHtml;
 
-    // Attacher l'événement au bouton "Archiver"
     document.getElementById('saveResultBtn')?.addEventListener('click', function() {
         const selected = document.querySelector('input[name="analysisType"]:checked');
         const typeName = selected ? selected.nextElementSibling.innerText.split('-')[0].trim() : 'Analyse';
@@ -441,41 +415,61 @@ document.getElementById('calcBtn').addEventListener('click', async function() {
     });
 });
 
-// -------------------- MENU MOBILE --------------------
-const menuToggle = document.getElementById('menuToggle');
-const navLinks = document.getElementById('navLinks');
+// -------------------- DÉCONNEXION --------------------
+document.addEventListener('click', async (e) => {
+    if (e.target.id === 'logoutBtn') {
+        e.preventDefault();
+        await supabaseClient.auth.signOut();
+        window.location.reload();
+    }
+});
 
-if (menuToggle && navLinks) {
-    menuToggle.addEventListener('click', function(e) {
-        e.stopPropagation();
-        navLinks.classList.toggle('active');
-        menuToggle.classList.toggle('open');
+// -------------------- INITIALISATION AU CHARGEMENT DU DOM --------------------
+document.addEventListener('DOMContentLoaded', function() {
+    // Menu mobile
+    const menuToggle = document.getElementById('menuToggle');
+    const navLinks = document.getElementById('navLinks');
+
+    if (menuToggle && navLinks) {
+        menuToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            navLinks.classList.toggle('active');
+            menuToggle.classList.toggle('open');
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!navLinks.contains(e.target) && !menuToggle.contains(e.target)) {
+                navLinks.classList.remove('active');
+                menuToggle.classList.remove('open');
+            }
+        });
+
+        navLinks.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    } else {
+        console.error('Menu mobile : éléments non trouvés');
+    }
+
+    // Initialisation des écouteurs de radios
+    radioAnalysis.forEach(radio => {
+        radio.addEventListener('change', updateCostDisplay);
     });
+    updateCostDisplay();
 
-    document.addEventListener('click', function(e) {
-        if (!navLinks.contains(e.target) && !menuToggle.contains(e.target)) {
-            navLinks.classList.remove('active');
-            menuToggle.classList.remove('open');
+    // Charger les données utilisateur et historique
+    checkUser();
+    loadHistory();
+
+    // Écouter les changements d'auth
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+            checkUser();
+        } else if (event === 'SIGNED_OUT') {
+            currentUser = null;
+            credits = 0;
+            updateCreditDisplay();
+            updateMenuForAuth();
         }
     });
-
-    navLinks.addEventListener('click', function(e) {
-        e.stopPropagation();
-    });
-}
-
-// -------------------- INITIALISATION --------------------
-checkUser();
-loadHistory();
-
-// Écouter les changements d'auth
-supabase.auth.onAuthStateChange((event, session) => {
-    if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        checkUser();
-    } else if (event === 'SIGNED_OUT') {
-        currentUser = null;
-        credits = 0;
-        updateCreditDisplay();
-        updateMenuForAuth();
-    }
 });
