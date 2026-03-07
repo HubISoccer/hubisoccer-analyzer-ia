@@ -1,4 +1,4 @@
-// ========== HUBISAI.JS – VERSION COMPLÈTE AVEC COÛTS VARIABLES ==========
+// ========== HUBISAI.JS – VERSION CORRIGÉE ==========
 
 // -------------------- DONNÉES DES COMPÉTITIONS --------------------
 const competitionsData = {
@@ -66,7 +66,6 @@ const competitionsData = {
 let credit = 25000; // Pour toi l'admin
 const CREDIT_KEY = 'hubisai_credit';
 
-// Tableau des coûts par type d'analyse
 const analysisCosts = {
     simple: 0.5,
     dc: 1,
@@ -107,14 +106,6 @@ function debitCredit(cost) {
     return false;
 }
 
-// Rechargement (simulé)
-document.addEventListener('click', function(e) {
-    if (e.target.closest('#rechargeBtn')) {
-        alert("Redirection vers FedaPay pour recharger (simulation)");
-        // Logique de paiement à intégrer plus tard
-    }
-});
-
 // -------------------- SÉLECTION DU TYPE D'ANALYSE --------------------
 const radioAnalysis = document.querySelectorAll('input[name="analysisType"]');
 const costDisplay = document.getElementById('costDisplay');
@@ -129,7 +120,7 @@ function updateCostDisplay() {
 radioAnalysis.forEach(radio => {
     radio.addEventListener('change', updateCostDisplay);
 });
-updateCostDisplay(); // Initialisation
+updateCostDisplay();
 
 // -------------------- GESTION DES COMPÉTITIONS --------------------
 const countrySelect = document.getElementById('countrySelect');
@@ -158,9 +149,8 @@ compSelect.addEventListener('change', function() {
     stakesDisplay.textContent = stakes.toFixed(1);
 });
 
-// -------------------- ALGORITHME DE CALCUL AMÉLIORÉ --------------------
+// -------------------- ALGORITHME DE CALCUL --------------------
 function calculatePrediction() {
-    // Récupération des valeurs
     const min = parseInt(document.getElementById('min').value) || 1;
     const score = document.getElementById('score').value || '0-0';
     const [bA, bB] = score.split('-').map(Number);
@@ -177,7 +167,6 @@ function calculatePrediction() {
     const formA = parseInt(document.getElementById('formA').value) || 3;
     const formB = parseInt(document.getElementById('formB').value) || 3;
 
-    // Indices de puissance
     let ipA = (tcA * 4) + ((tA - tcA) * 1) + (adA * 0.7);
     let ipB = (tcB * 4) + ((tB - tcB) * 1) + (adB * 0.7);
     let rankBonusA = (rankB - rankA) * 0.5;
@@ -185,7 +174,6 @@ function calculatePrediction() {
     let totalPowerA = (ipA + (formA * 2) + rankBonusA) * stakes;
     let totalPowerB = (ipB + (formB * 2) + rankBonusB) * stakes;
 
-    // Double Chance
     let dc = "", reasonDC = "";
     if (totalPowerA > totalPowerB * 1.3) {
         dc = "1X";
@@ -198,7 +186,6 @@ function calculatePrediction() {
         reasonDC = "Match très serré, le nul improbable.";
     }
 
-    // Prédiction Buts
     let buts = "";
     let dangerTotal = (tcA + tcB) / min;
     if (dangerTotal > 0.25 || (stakes > 1.5 && min > 70)) {
@@ -211,7 +198,6 @@ function calculatePrediction() {
         buts = (bA + bB > 2) ? "-3,5 Buts" : "-2,5 Buts";
     }
 
-    // Total de tirs estimé
     let totalTirs = tA + tB;
     let predTirs = "";
     if (totalTirs > 25) predTirs = "Plus de 25 tirs";
@@ -248,18 +234,32 @@ function renderHistory() {
                 <small>${new Date(h.date).toLocaleString()}</small>
             </div>
             <div>
-                <button onclick="setHistoryResult(${h.id}, 'GAGNÉ')">✅</button>
-                <button onclick="setHistoryResult(${h.id}, 'PERDU')">❌</button>
+                <button class="history-win" data-id="${h.id}">✅</button>
+                <button class="history-lose" data-id="${h.id}">❌</button>
             </div>
         </div>
     `).join('');
 }
 
-window.setHistoryResult = function(id, status) {
+// Délégation d'événements pour les boutons de l'historique
+document.getElementById('historyList')?.addEventListener('click', function(e) {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const id = parseInt(btn.dataset.id);
+    if (isNaN(id)) return;
+
+    if (btn.classList.contains('history-win')) {
+        setHistoryResult(id, 'GAGNÉ');
+    } else if (btn.classList.contains('history-lose')) {
+        setHistoryResult(id, 'PERDU');
+    }
+});
+
+function setHistoryResult(id, status) {
     history = history.map(h => h.id === id ? {...h, status} : h);
     saveHistory();
     renderHistory();
-};
+}
 
 function addHistory(type, resultText) {
     history.push({
@@ -284,7 +284,7 @@ document.getElementById('calcBtn').addEventListener('click', function() {
     const cost = analysisCosts[analysisType] || 0.5;
 
     if (!hasEnoughCredit(cost)) {
-        alert(`Crédits insuffisants. Il vous faut ${cost} HubiSai. Veuillez recharger.`);
+        alert(`Crédits insuffisants. Il vous faut ${cost} HubiSai.`);
         return;
     }
 
@@ -292,7 +292,6 @@ document.getElementById('calcBtn').addEventListener('click', function() {
     let resultText = "";
     let displayHtml = "<h2>🎯 RÉSULTAT IA HUBISOCCER</h2>";
 
-    // Construction de l'affichage selon le type choisi
     if (analysisType === "simple" || analysisType === "combo" || analysisType === "full") {
         displayHtml += `<div class="res-box"><span class="res-label">Analyse</span><span class="res-val">${result.reasonDC} | Puissance A: ${result.totalPowerA.toFixed(1)} B: ${result.totalPowerB.toFixed(1)}</span></div>`;
         resultText += `Analyse: ${result.reasonDC}`;
@@ -310,29 +309,48 @@ document.getElementById('calcBtn').addEventListener('click', function() {
         resultText += ` Tirs: ${result.predTirs}`;
     }
 
-    displayHtml += `<button onclick="saveCurrentResult('${resultText}')" class="btn-small" style="width:100%; margin-top:15px;">💾 ARCHIVER</button>`;
+    displayHtml += `<button id="saveResultBtn" class="btn-small" style="width:100%; margin-top:15px;">💾 ARCHIVER</button>`;
 
-    // Débiter les crédits
     debitCredit(cost);
 
-    // Afficher
     const resultDiv = document.getElementById('finalResult');
     resultDiv.style.display = 'block';
     resultDiv.innerHTML = displayHtml;
+
+    // Attacher l'événement au bouton "Archiver" après l'avoir créé
+    document.getElementById('saveResultBtn')?.addEventListener('click', function() {
+        const selected = document.querySelector('input[name="analysisType"]:checked');
+        const typeName = selected ? selected.nextElementSibling.innerText.split('-')[0].trim() : 'Analyse';
+        addHistory(typeName, resultText);
+        alert('Pronostic archivé !');
+    });
 });
 
-window.saveCurrentResult = function(text) {
-    const selected = document.querySelector('input[name="analysisType"]:checked');
-    const typeName = selected ? selected.nextElementSibling.innerText.split('-')[0].trim() : 'Analyse';
-    addHistory(typeName, text);
-    alert('Pronostic archivé !');
-};
+// -------------------- MENU MOBILE CORRIGÉ --------------------
+const menuToggle = document.getElementById('menuToggle');
+const navLinks = document.getElementById('navLinks');
 
-// -------------------- MENU MOBILE --------------------
-document.getElementById('menuToggle')?.addEventListener('click', function() {
-    document.getElementById('navLinks').classList.toggle('active');
-    this.classList.toggle('open');
-});
+if (menuToggle && navLinks) {
+    // Ouvre/ferme au clic sur le bouton
+    menuToggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        navLinks.classList.toggle('active');
+        menuToggle.classList.toggle('open');
+    });
+
+    // Ferme si on clique ailleurs sur la page
+    document.addEventListener('click', function(e) {
+        if (!navLinks.contains(e.target) && !menuToggle.contains(e.target)) {
+            navLinks.classList.remove('active');
+            menuToggle.classList.remove('open');
+        }
+    });
+
+    // Empêche la fermeture si on clique à l'intérieur du menu
+    navLinks.addEventListener('click', function(e) {
+        e.stopPropagation();
+    });
+}
 
 // -------------------- INITIALISATION --------------------
 initCredits();
