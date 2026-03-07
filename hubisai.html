@@ -4,14 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HubISoccer AI Ultra Predictor</title>
-    <!-- Polices et icônes -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Notre CSS spécifique -->
     <link rel="stylesheet" href="hubisai.css">
 </head>
 <body>
-    <!-- En-tête avec navigation (identique au projet principal) -->
+    <!-- Navigation -->
     <nav>
         <a href="./" class="logo-link">
             <img src="img/logo-navbar.png" alt="HubISoccer" class="logo-nav">
@@ -43,33 +41,64 @@
                 <option value="pl">🇵🇱 Polski</option>
                 <option value="vi">🇻🇳 Tiếng Việt</option>
             </select>
-
-            <button class="menu-toggle" id="menuToggle">
-                <span></span><span></span><span></span>
-            </button>
-
             <div class="nav-links" id="navLinks">
-                <!-- Ces liens seront modifiés dynamiquement selon la connexion -->
-                <a href="auth/login.html" class="btn-auth" id="loginLink">Connexion</a>
-                <a href="auth/signup.html" class="btn-auth gold" id="signupLink">S'inscrire</a>
-                <!-- Après connexion, on cache les deux et on affiche ces liens (gérés par JS) -->
-                <a href="profile.html" id="profileLink" style="display:none;">Mon compte</a>
-                <a href="#" id="logoutLink" style="display:none;">Déconnexion</a>
+                <span class="credits-badge"><i class="fas fa-coins"></i> <span id="creditDisplay">25000</span> HubiSai</span>
+                <a href="auth/login.html" class="btn-auth" id="loginBtn">Connexion</a>
+                <a href="auth/signup.html" class="btn-auth gold" id="signupBtn">S'inscrire</a>
+                <a href="auth/profile.html" class="btn-auth" id="profileBtn" style="display:none;">Mon compte</a>
             </div>
+            <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
         </div>
     </nav>
 
     <div class="container">
-        <!-- En-tête de la page avec crédits -->
-        <div class="header-credits">
-            <h1>HubISoccer <span class="accent">AI ULTRA</span></h1>
-            <div class="credits-box">
-                <span>💎 Hubisai</span>
-                <span id="creditDisplay">0</span>
-                <button id="rechargeBtn" class="btn-small">➕ Recharger</button>
+        <!-- En-tête -->
+        <header>
+            <h1>HubISoccer <span class="gold">AI ULTRA</span></h1>
+            <p class="subtitle">Analyse multicritères • Contexte championnat • Crédits HubiSai</p>
+        </header>
+
+        <!-- Section 0 : Choix du type d'analyse (NOUVEAU) -->
+        <div class="section">
+            <h2>🎯 Type d'analyse / pronostic</h2>
+            <div class="analysis-selector">
+                <label class="analysis-option">
+                    <input type="radio" name="analysisType" value="simple" checked> 
+                    <span>📊 Analyse simple (sans pronostic) - <strong>0,5 HubiSai</strong></span>
+                </label>
+                <label class="analysis-option">
+                    <input type="radio" name="analysisType" value="dc"> 
+                    <span>⚖️ Double Chance uniquement - <strong>1 HubiSai</strong></span>
+                </label>
+                <label class="analysis-option">
+                    <input type="radio" name="analysisType" value="buts05"> 
+                    <span>🥅 +0,5 Buts - <strong>1 HubiSai</strong></span>
+                </label>
+                <label class="analysis-option">
+                    <input type="radio" name="analysisType" value="buts15"> 
+                    <span>⚽ +1,5 Buts - <strong>1 HubiSai</strong></span>
+                </label>
+                <label class="analysis-option">
+                    <input type="radio" name="analysisType" value="buts25"> 
+                    <span>⚽⚽ +2,5 Buts - <strong>1 HubiSai</strong></span>
+                </label>
+                <label class="analysis-option">
+                    <input type="radio" name="analysisType" value="totalTirs"> 
+                    <span>🎯 Total de tirs dans le match - <strong>1,5 HubiSai</strong></span>
+                </label>
+                <label class="analysis-option">
+                    <input type="radio" name="analysisType" value="combo"> 
+                    <span>🔥 Analyse complète (Double Chance + Buts) - <strong>2 HubiSai</strong></span>
+                </label>
+                <label class="analysis-option">
+                    <input type="radio" name="analysisType" value="full"> 
+                    <span>🏆 Tout (DC + Buts + Tirs + Conseils) - <strong>3 HubiSai</strong></span>
+                </label>
+            </div>
+            <div class="info-box" id="costDisplay">
+                Coût de l'analyse sélectionnée : <strong>0,5 HubiSai</strong>
             </div>
         </div>
-        <p class="subtitle">Analyse multicritères & contexte championnat</p>
 
         <!-- Section 1 : Contexte du match -->
         <div class="section">
@@ -99,7 +128,7 @@
                     </select>
                 </div>
             </div>
-            <div class="grid-2" style="margin-top:15px;">
+            <div class="grid-2">
                 <div>
                     <label>Équipe A (DOM)</label>
                     <input type="text" id="nameA" placeholder="Ex: Real Madrid">
@@ -109,13 +138,12 @@
                     <input type="text" id="nameB" placeholder="Ex: Barça">
                 </div>
             </div>
-            <!-- L'enjeu est calculé automatiquement, mais on peut le montrer -->
             <div class="info-box">
                 <span>⚡ Enjeu : </span><span id="stakesDisplay">1.0</span>
             </div>
         </div>
 
-        <!-- Section 2 : État de forme (saison) -->
+        <!-- Section 2 : État de forme -->
         <div class="section">
             <h2>2. État de forme (saison)</h2>
             <div class="grid-2">
@@ -140,7 +168,7 @@
 
         <!-- Section 3 : Données en direct -->
         <div class="section">
-            <h2>3. Données en direct</h2>
+            <h2>3. Données en direct (live)</h2>
             <div class="grid-2">
                 <div><label>Minute actuelle</label><input type="number" id="min" value="30"></div>
                 <div><label>Score (ex: 1-0)</label><input type="text" id="score" value="0-0"></div>
@@ -171,11 +199,11 @@
 
         <!-- Historique -->
         <div class="section">
-            <h2>📊 Historique</h2>
+            <h2>📊 Historique des analyses</h2>
             <div id="historyList" class="history-list"></div>
         </div>
 
-        <!-- Footer (identique au projet principal) -->
+        <!-- Footer -->
         <footer>
             <div class="compliance-badges">
                 <div class="badge-item">Vous aidez à mieux parier</div>
@@ -193,7 +221,6 @@
         </footer>
     </div>
 
-    <!-- Script principal -->
     <script src="hubisai.js"></script>
 </body>
 </html>
