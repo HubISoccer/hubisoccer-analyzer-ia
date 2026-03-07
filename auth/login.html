@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - HubISoccer AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="../hubisai.css">
+    <style>
+        .auth-container {
+            max-width: 400px;
+            margin: 50px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+        }
+        .auth-container h2 {
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .auth-container input {
+            margin-bottom: 15px;
+        }
+        .auth-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .auth-btn:hover {
+            background: var(--primary-light);
+        }
+        .auth-links {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .auth-links a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        .message {
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: none;
+        }
+        .message.error {
+            background: #ffebee;
+            color: var(--danger);
+            display: block;
+        }
+        .message.success {
+            background: #e8f5e9;
+            color: var(--success);
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="../index.html" class="logo-link">
+            <img src="../img/logo-navbar.png" alt="HubISoccer" class="logo-nav">
+        </a>
+        <div class="nav-right">
+            <a href="../hubisai.html" class="btn-auth">← Retour à l'analyseur</a>
+        </div>
+    </nav>
+
+    <div class="auth-container">
+        <h2>Connexion</h2>
+        <div id="message" class="message"></div>
+        <form id="loginForm">
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="password" id="password" placeholder="Mot de passe" required>
+            <button type="submit" class="auth-btn">Se connecter</button>
+        </form>
+        <div class="auth-links">
+            <a href="signup.html">Pas encore de compte ? S'inscrire</a><br>
+            <a href="reset-password.html">Mot de passe oublié ?</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const supabaseUrl = 'https://hlszrqnrzfvzjwindwpw.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhsc3pycW5yemZ2emp3aW5kd3B3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTQ2NzYsImV4cCI6MjA4ODQ5MDY3Nn0.LXdNt0NWF_MlQy7MTclrdGl-RP7pfxl-xjtysIQEBXU';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const messageDiv = document.getElementById('message');
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password
+                });
+
+                if (error) throw error;
+
+                messageDiv.className = 'message success';
+                messageDiv.textContent = 'Connexion réussie ! Redirection...';
+                setTimeout(() => {
+                    window.location.href = '../hubisai.html';
+                }, 1500);
+            } catch (error) {
+                messageDiv.className = 'message error';
+                messageDiv.textContent = error.message;
+            }
+        });
+    </script>
+</body>
+</html>
