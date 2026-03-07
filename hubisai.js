@@ -1,6 +1,6 @@
-// ========== HUBISAI.JS – VERSION AVEC SUPABASE ==========
+// ========== HUBISAI.JS – VERSION FINALE AVEC SUPABASE ==========
 
-// Configuration Supabase
+// Configuration Supabase (à vérifier)
 const supabaseUrl = 'https://hlszrqnrzfvzjwindwpw.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhsc3pycW5yemZ2emp3aW5kd3B3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTQ2NzYsImV4cCI6MjA4ODQ5MDY3Nn0.LXdNt0NWF_MlQy7MTclrdGl-RP7pfxl-xjtysIQEBXU';
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
@@ -12,8 +12,59 @@ const competitionsData = {
         "Championship": { stakes: 1.0, type: "league" },
         "FA Cup": { stakes: 1.8, type: "cup" }
     },
-    // ... (le reste des données est identique à avant, je ne réécris pas pour gagner de la place)
-    // Assure-toi de conserver l'intégralité de l'objet competitionsData de la version précédente.
+    espagne: {
+        "La Liga": { stakes: 1.0, type: "league" },
+        "La Liga 2 (Segunda)": { stakes: 1.0, type: "league" },
+        "Copa del Rey": { stakes: 1.8, type: "cup" }
+    },
+    italie: {
+        "Serie A": { stakes: 1.0, type: "league" },
+        "Serie B": { stakes: 1.0, type: "league" },
+        "Coppa Italia": { stakes: 1.8, type: "cup" }
+    },
+    allemagne: {
+        "Bundesliga": { stakes: 1.0, type: "league" },
+        "2. Bundesliga": { stakes: 1.0, type: "league" },
+        "DFB-Pokal": { stakes: 1.8, type: "cup" }
+    },
+    france: {
+        "Ligue 1": { stakes: 1.0, type: "league" },
+        "Ligue 2": { stakes: 1.0, type: "league" },
+        "Coupe de France": { stakes: 1.8, type: "cup" }
+    },
+    portugal: {
+        "Primeira Liga": { stakes: 1.0, type: "league" },
+        "Liga Portugal 2": { stakes: 1.0, type: "league" },
+        "Taça de Portugal": { stakes: 1.8, type: "cup" }
+    },
+    paysbas: {
+        "Eredivisie": { stakes: 1.0, type: "league" },
+        "Eerste Divisie": { stakes: 1.0, type: "league" },
+        "KNVB Beker": { stakes: 1.8, type: "cup" }
+    },
+    bresil: {
+        "Série A (Brasileirão)": { stakes: 1.0, type: "league" },
+        "Série B": { stakes: 1.0, type: "league" },
+        "Copa do Brasil": { stakes: 1.8, type: "cup" }
+    },
+    belgique: {
+        "Pro League": { stakes: 1.0, type: "league" },
+        "Challenger Pro League": { stakes: 1.0, type: "league" },
+        "Coupe de Belgique": { stakes: 1.8, type: "cup" }
+    },
+    turquie: {
+        "Süper Lig": { stakes: 1.0, type: "league" },
+        "TFF 1. Lig": { stakes: 1.0, type: "league" },
+        "Coupe de Turquie": { stakes: 1.8, type: "cup" }
+    },
+    europe: {
+        "UEFA Champions League (Phase de groupes)": { stakes: 1.3, type: "europe-group" },
+        "UEFA Champions League (Élimination directe)": { stakes: 2.0, type: "europe-knockout" },
+        "UEFA Europa League (Phase de groupes)": { stakes: 1.2, type: "europe-group" },
+        "UEFA Europa League (Élimination directe)": { stakes: 1.8, type: "europe-knockout" },
+        "UEFA Conference League (Phase de groupes)": { stakes: 1.1, type: "europe-group" },
+        "UEFA Conference League (Élimination directe)": { stakes: 1.6, type: "europe-knockout" }
+    }
 };
 
 // -------------------- GESTION DE L'UTILISATEUR --------------------
@@ -33,7 +84,7 @@ async function checkUser() {
         if (!error && data) {
             credits = data.credits;
         } else {
-            credits = 15; // fallback
+            credits = 0; // fallback
         }
         updateCreditDisplay();
         updateMenuForAuth();
@@ -48,6 +99,7 @@ function updateMenuForAuth() {
     const loginBtn = document.getElementById('loginBtn');
     const signupBtn = document.getElementById('signupBtn');
     const profileBtn = document.getElementById('profileBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
     const creditsBadge = document.querySelector('.credits-badge');
 
     if (currentUser) {
@@ -55,13 +107,15 @@ function updateMenuForAuth() {
         if (loginBtn) loginBtn.style.display = 'none';
         if (signupBtn) signupBtn.style.display = 'none';
         if (profileBtn) profileBtn.style.display = 'inline-block';
+        if (logoutBtn) logoutBtn.style.display = 'inline-block';
         if (creditsBadge) creditsBadge.style.display = 'flex';
     } else {
         // Non connecté
         if (loginBtn) loginBtn.style.display = 'inline-block';
         if (signupBtn) signupBtn.style.display = 'inline-block';
         if (profileBtn) profileBtn.style.display = 'none';
-        if (creditsBadge) creditsBadge.style.display = 'flex'; // On peut afficher 0 crédit
+        if (logoutBtn) logoutBtn.style.display = 'none';
+        if (creditsBadge) creditsBadge.style.display = 'flex'; // afficher 0
     }
 }
 
@@ -70,7 +124,18 @@ function updateCreditDisplay() {
     if (creditSpan) creditSpan.textContent = credits.toFixed(1);
 }
 
-// -------------------- FONCTIONS DE CRÉDITS --------------------
+// Déconnexion
+document.addEventListener('click', async (e) => {
+    if (e.target.id === 'logoutBtn') {
+        e.preventDefault();
+        await supabase.auth.signOut();
+        window.location.reload();
+    }
+});
+
+// -------------------- SÉLECTION DU TYPE D'ANALYSE --------------------
+const radioAnalysis = document.querySelectorAll('input[name="analysisType"]');
+const costDisplay = document.getElementById('costDisplay');
 const analysisCosts = {
     simple: 0.5,
     dc: 1,
@@ -82,6 +147,108 @@ const analysisCosts = {
     full: 3
 };
 
+function updateCostDisplay() {
+    const selected = document.querySelector('input[name="analysisType"]:checked');
+    if (!selected) return;
+    const cost = analysisCosts[selected.value] || 0.5;
+    costDisplay.innerHTML = `Coût de l'analyse sélectionnée : <strong>${cost} HubiSai</strong>`;
+}
+
+radioAnalysis.forEach(radio => {
+    radio.addEventListener('change', updateCostDisplay);
+});
+updateCostDisplay();
+
+// -------------------- GESTION DES COMPÉTITIONS --------------------
+const countrySelect = document.getElementById('countrySelect');
+const compSelect = document.getElementById('compSelect');
+const stakesDisplay = document.getElementById('stakesDisplay');
+
+countrySelect.addEventListener('change', function() {
+    const country = this.value;
+    compSelect.innerHTML = '<option value="">Choisissez une compétition</option>';
+    if (!country) return;
+
+    const comps = competitionsData[country];
+    for (let compName in comps) {
+        const option = document.createElement('option');
+        option.value = compName;
+        option.textContent = compName;
+        compSelect.appendChild(option);
+    }
+});
+
+compSelect.addEventListener('change', function() {
+    const country = countrySelect.value;
+    const comp = this.value;
+    if (!country || !comp) return;
+    const stakes = competitionsData[country][comp].stakes;
+    stakesDisplay.textContent = stakes.toFixed(1);
+});
+
+// -------------------- ALGORITHME DE CALCUL --------------------
+function calculatePrediction() {
+    const min = parseInt(document.getElementById('min').value) || 1;
+    const score = document.getElementById('score').value || '0-0';
+    const [bA, bB] = score.split('-').map(Number);
+    const stakes = parseFloat(stakesDisplay.textContent) || 1.0;
+
+    const tA = parseInt(document.getElementById('tA').value) || 0;
+    const tB = parseInt(document.getElementById('tB').value) || 0;
+    const tcA = parseInt(document.getElementById('tcA').value) || 0;
+    const tcB = parseInt(document.getElementById('tcB').value) || 0;
+    const adA = parseInt(document.getElementById('adA').value) || 0;
+    const adB = parseInt(document.getElementById('adB').value) || 0;
+    const rankA = parseInt(document.getElementById('rankA').value) || 10;
+    const rankB = parseInt(document.getElementById('rankB').value) || 10;
+    const formA = parseInt(document.getElementById('formA').value) || 3;
+    const formB = parseInt(document.getElementById('formB').value) || 3;
+
+    // Indices de puissance
+    let ipA = (tcA * 4) + ((tA - tcA) * 1) + (adA * 0.7);
+    let ipB = (tcB * 4) + ((tB - tcB) * 1) + (adB * 0.7);
+    let rankBonusA = (rankB - rankA) * 0.5;
+    let rankBonusB = (rankA - rankB) * 0.5;
+    let totalPowerA = (ipA + (formA * 2) + rankBonusA) * stakes;
+    let totalPowerB = (ipB + (formB * 2) + rankBonusB) * stakes;
+
+    // Double Chance
+    let dc = "", reasonDC = "";
+    if (totalPowerA > totalPowerB * 1.3) {
+        dc = "1X";
+        reasonDC = "L'équipe A domine nettement.";
+    } else if (totalPowerB > totalPowerA * 1.3) {
+        dc = "2X";
+        reasonDC = "L'équipe B a une nette supériorité.";
+    } else {
+        dc = "12";
+        reasonDC = "Match très serré, le nul improbable.";
+    }
+
+    // Prédiction Buts
+    let buts = "";
+    let dangerTotal = (tcA + tcB) / min;
+    if (dangerTotal > 0.25 || (stakes > 1.5 && min > 70)) {
+        buts = "+2,5 Buts";
+    } else if (dangerTotal > 0.12) {
+        buts = "+1,5 Buts";
+    } else if (dangerTotal > 0.06) {
+        buts = "+0,5 Buts";
+    } else {
+        buts = (bA + bB > 2) ? "-3,5 Buts" : "-2,5 Buts";
+    }
+
+    // Total de tirs estimé
+    let totalTirs = tA + tB;
+    let predTirs = "";
+    if (totalTirs > 25) predTirs = "Plus de 25 tirs";
+    else if (totalTirs > 20) predTirs = "Entre 20 et 25 tirs";
+    else predTirs = "Moins de 20 tirs";
+
+    return { dc, buts, predTirs, reasonDC, totalPowerA, totalPowerB };
+}
+
+// -------------------- FONCTIONS DE CRÉDITS ET SAUVEGARDE --------------------
 async function hasEnoughCredit(cost) {
     return credits >= cost;
 }
@@ -96,7 +263,6 @@ async function debitCredit(cost) {
         return false;
     }
 
-    // Mettre à jour dans Supabase
     const newCredits = credits - cost;
     const { error } = await supabase
         .from('profiles')
@@ -114,26 +280,85 @@ async function debitCredit(cost) {
     return true;
 }
 
-// -------------------- SAUVEGARDE DES ANALYSES --------------------
 async function saveAnalysis(type, inputData, result, cost) {
     if (!currentUser) return;
 
     const { error } = await supabase
         .from('analyses')
-        .insert([
-            {
-                user_id: currentUser.id,
-                type: type,
-                input_data: inputData,
-                result: result,
-                credits_cost: cost
-            }
-        ]);
+        .insert([{
+            user_id: currentUser.id,
+            type: type,
+            input_data: inputData,
+            result: result,
+            credits_cost: cost
+        }]);
 
     if (error) console.error('Erreur sauvegarde analyse:', error);
 }
 
-// -------------------- BOUTON DE CALCUL MODIFIÉ --------------------
+// -------------------- HISTORIQUE LOCAL (en attendant de charger depuis BDD) --------------------
+let history = [];
+
+function loadHistory() {
+    const stored = localStorage.getItem('hubisai_history');
+    if (stored) history = JSON.parse(stored);
+    renderHistory();
+}
+
+function saveHistory() {
+    localStorage.setItem('hubisai_history', JSON.stringify(history));
+}
+
+function renderHistory() {
+    const list = document.getElementById('historyList');
+    if (!list) return;
+    if (history.length === 0) {
+        list.innerHTML = '<p class="no-data">Aucun historique.</p>';
+        return;
+    }
+    list.innerHTML = history.slice().reverse().map(h => `
+        <div class="history-item" data-id="${h.id}">
+            <div>
+                <strong>${h.type} : ${h.result}</strong><br>
+                <small>${new Date(h.date).toLocaleString()}</small>
+            </div>
+            <div>
+                <button class="history-win" data-id="${h.id}">✅</button>
+                <button class="history-lose" data-id="${h.id}">❌</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Délégation pour l'historique
+document.getElementById('historyList')?.addEventListener('click', function(e) {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const id = parseInt(btn.dataset.id);
+    if (isNaN(id)) return;
+
+    if (btn.classList.contains('history-win')) {
+        history = history.map(h => h.id === id ? {...h, status: 'GAGNÉ'} : h);
+    } else if (btn.classList.contains('history-lose')) {
+        history = history.map(h => h.id === id ? {...h, status: 'PERDU'} : h);
+    }
+    saveHistory();
+    renderHistory();
+});
+
+function addHistory(type, resultText) {
+    history.push({
+        id: Date.now(),
+        type: type,
+        result: resultText,
+        date: new Date().toISOString(),
+        status: 'Attente'
+    });
+    saveHistory();
+    renderHistory();
+}
+
+// -------------------- BOUTON DE CALCUL --------------------
 document.getElementById('calcBtn').addEventListener('click', async function() {
     const selectedAnalysis = document.querySelector('input[name="analysisType"]:checked');
     if (!selectedAnalysis) {
@@ -143,12 +368,17 @@ document.getElementById('calcBtn').addEventListener('click', async function() {
     const analysisType = selectedAnalysis.value;
     const cost = analysisCosts[analysisType] || 0.5;
 
+    if (!currentUser) {
+        alert('Vous devez être connecté pour effectuer une analyse.');
+        return;
+    }
+
     if (!await hasEnoughCredit(cost)) {
         alert(`Crédits insuffisants. Il vous faut ${cost} HubiSai.`);
         return;
     }
 
-    // Récupérer toutes les données saisies pour les sauvegarder
+    // Récupérer les données saisies
     const inputData = {
         min: document.getElementById('min').value,
         score: document.getElementById('score').value,
@@ -162,17 +392,16 @@ document.getElementById('calcBtn').addEventListener('click', async function() {
         rankB: document.getElementById('rankB').value,
         formA: document.getElementById('formA').value,
         formB: document.getElementById('formB').value,
-        country: document.getElementById('countrySelect').value,
-        competition: document.getElementById('compSelect').value,
+        country: countrySelect.value,
+        competition: compSelect.value,
         nameA: document.getElementById('nameA').value,
         nameB: document.getElementById('nameB').value
     };
 
-    const result = calculatePrediction(); // fonction inchangée
+    const result = calculatePrediction();
     let resultText = "";
     let displayHtml = "<h2>🎯 RÉSULTAT IA HUBISOCCER</h2>";
 
-    // Construction de l'affichage (identique à avant)
     if (analysisType === "simple" || analysisType === "combo" || analysisType === "full") {
         displayHtml += `<div class="res-box"><span class="res-label">Analyse</span><span class="res-val">${result.reasonDC} | Puissance A: ${result.totalPowerA.toFixed(1)} B: ${result.totalPowerB.toFixed(1)}</span></div>`;
         resultText += `Analyse: ${result.reasonDC}`;
@@ -192,10 +421,10 @@ document.getElementById('calcBtn').addEventListener('click', async function() {
 
     displayHtml += `<button id="saveResultBtn" class="btn-small" style="width:100%; margin-top:15px;">💾 ARCHIVER</button>`;
 
-    // Débiter les crédits
-    if (!await debitCredit(cost)) return;
+    // Débiter et sauvegarder
+    const debited = await debitCredit(cost);
+    if (!debited) return;
 
-    // Sauvegarder l'analyse dans Supabase
     await saveAnalysis(analysisType, inputData, result, cost);
 
     // Afficher le résultat
@@ -207,13 +436,12 @@ document.getElementById('calcBtn').addEventListener('click', async function() {
     document.getElementById('saveResultBtn')?.addEventListener('click', function() {
         const selected = document.querySelector('input[name="analysisType"]:checked');
         const typeName = selected ? selected.nextElementSibling.innerText.split('-')[0].trim() : 'Analyse';
-        // Ici on pourrait aussi sauvegarder l'analyse manuellement, mais déjà fait
         addHistory(typeName, resultText);
         alert('Pronostic archivé !');
     });
 });
 
-// -------------------- MENU MOBILE (inchangé, mais on s'assure que les éléments existent) --------------------
+// -------------------- MENU MOBILE --------------------
 const menuToggle = document.getElementById('menuToggle');
 const navLinks = document.getElementById('navLinks');
 
@@ -238,8 +466,9 @@ if (menuToggle && navLinks) {
 
 // -------------------- INITIALISATION --------------------
 checkUser();
+loadHistory();
 
-// On peut aussi écouter les changements d'auth
+// Écouter les changements d'auth
 supabase.auth.onAuthStateChange((event, session) => {
     if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         checkUser();
