@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Pronostics HubISoccer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="../hubisai.css">
+    <style>
+        .admin-container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .admin-header h1 {
+            color: var(--primary);
+        }
+        .btn-add {
+            background: var(--gold);
+            color: black;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .btn-add:hover {
+            background: var(--gold-dark);
+        }
+        .pronostic-form {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            display: none;
+        }
+        .pronostic-form.active {
+            display: block;
+        }
+        .pronostic-form h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--light-gray);
+            border-radius: 10px;
+            font-family: var(--font-main);
+        }
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        .btn-save {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+        }
+        .btn-cancel {
+            background: var(--light-gray);
+            color: var(--dark);
+            border: none;
+            padding: 10px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+        }
+        .pronostics-list {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+        }
+        .pronostic-item {
+            border-bottom: 1px solid var(--light-gray);
+            padding: 15px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .pronostic-item:last-child {
+            border-bottom: none;
+        }
+        .pronostic-info h3 {
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        .pronostic-info p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        .pronostic-prediction {
+            font-weight: 700;
+            color: var(--gold);
+            font-size: 1.2rem;
+        }
+        .pronostic-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            margin: 0 5px;
+            padding: 5px;
+        }
+        .pronostic-actions .delete { color: var(--danger); }
+        .pronostic-actions .edit { color: var(--primary); }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--gray);
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="../index.html" class="logo-link">
+            <img src="../img/logo-navbar.png" alt="HubISoccer" class="logo-nav">
+        </a>
+        <div class="nav-right">
+            <a href="../hubisai.html" class="btn-auth">← Retour à l'analyseur</a>
+        </div>
+    </nav>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>Gestion des pronostics publics</h1>
+            <button class="btn-add" id="showFormBtn"><i class="fas fa-plus"></i> Nouveau pronostic</button>
+        </div>
+
+        <div class="pronostic-form" id="pronosticForm">
+            <h2 id="formTitle">Ajouter un pronostic</h2>
+            <form id="pronosticFormElement">
+                <input type="hidden" id="pronosticId">
+                <div class="form-group">
+                    <label>Titre du match</label>
+                    <input type="text" id="matchTitle" required placeholder="Ex: Real Madrid vs Barcelone">
+                </div>
+                <div class="form-group">
+                    <label>Compétition</label>
+                    <input type="text" id="competition" placeholder="Ex: Liga">
+                </div>
+                <div class="form-group">
+                    <label>Pronostic</label>
+                    <input type="text" id="prediction" required placeholder="Ex: 1X / +2.5 buts">
+                </div>
+                <div class="form-group">
+                    <label>Analyse (optionnel)</label>
+                    <textarea id="analysis" rows="3" placeholder="Brève analyse..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Date d'expiration</label>
+                    <input type="date" id="expiresAt">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" id="cancelFormBtn">Annuler</button>
+                    <button type="submit" class="btn-save">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="pronostics-list" id="pronosticsList">
+            <div class="loading">Chargement...</div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const supabaseUrl = 'https://hlszrqnrzfvzjwindwpw.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhsc3pycW5yemZ2emp3aW5kd3B3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTQ2NzYsImV4cCI6MjA4ODQ5MDY3Nn0.LXdNt0NWF_MlQy7MTclrdGl-RP7pfxl-xjtysIQEBXU';
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        let currentUser = null;
+
+        async function checkAdmin() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            currentUser = user;
+            if (!user) {
+                window.location.href = '../auth/login.html';
+                return false;
+            }
+            const adminEmails = ['tonemail@example.com']; // Remplace par ton email
+            if (!adminEmails.includes(user.email)) {
+                alert('Accès non autorisé.');
+                window.location.href = '../hubisai.html';
+                return false;
+            }
+            return true;
+        }
+
+        async function loadPronostics() {
+            const listDiv = document.getElementById('pronosticsList');
+            const { data, error } = await supabaseClient
+                .from('public_pronostics')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('Erreur chargement pronostics:', error);
+                listDiv.innerHTML = '<div class="empty-state">Erreur de chargement.</div>';
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                listDiv.innerHTML = '<div class="empty-state">Aucun pronostic publié.</div>';
+                return;
+            }
+
+            listDiv.innerHTML = data.map(p => `
+                <div class="pronostic-item" data-id="${p.id}">
+                    <div class="pronostic-info">
+                        <h3>${p.match_title}</h3>
+                        <p>${p.competition || ''} - ${new Date(p.created_at).toLocaleDateString()}</p>
+                        ${p.analysis ? `<p><small>${p.analysis}</small></p>` : ''}
+                    </div>
+                    <div class="pronostic-prediction">${p.prediction}</div>
+                    <div class="pronostic-actions">
+                        <button class="edit" onclick="editPronostic('${p.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="delete" onclick="deletePronostic('${p.id}')"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        document.getElementById('showFormBtn').addEventListener('click', () => {
+            document.getElementById('pronosticForm').classList.add('active');
+            document.getElementById('formTitle').textContent = 'Ajouter un pronostic';
+            document.getElementById('pronosticFormElement').reset();
+            document.getElementById('pronosticId').value = '';
+        });
+
+        document.getElementById('cancelFormBtn').addEventListener('click', () => {
+            document.getElementById('pronosticForm').classList.remove('active');
+        });
+
+        document.getElementById('pronosticFormElement').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const matchTitle = document.getElementById('matchTitle').value;
+            const competition = document.getElementById('competition').value;
+            const prediction = document.getElementById('prediction').value;
+            const analysis = document.getElementById('analysis').value;
+            const expiresAt = document.getElementById('expiresAt').value;
+            const id = document.getElementById('pronosticId').value;
+
+            if (!currentUser) {
+                alert('Vous devez être connecté.');
+                return;
+            }
+
+            const pronosticData = {
+                match_title: matchTitle,
+                competition: competition || null,
+                prediction: prediction,
+                analysis: analysis || null,
+                expires_at: expiresAt || null,
+                created_by: currentUser.id
+            };
+
+            let error;
+            if (id) {
+                const { error: updateError } = await supabaseClient
+                    .from('public_pronostics')
+                    .update(pronosticData)
+                    .eq('id', id);
+                error = updateError;
+            } else {
+                const { error: insertError } = await supabaseClient
+                    .from('public_pronostics')
+                    .insert([pronosticData]);
+                error = insertError;
+            }
+
+            if (error) {
+                console.error('Erreur sauvegarde:', error);
+                alert('Erreur lors de l\'enregistrement.');
+            } else {
+                document.getElementById('pronosticForm').classList.remove('active');
+                loadPronostics();
+            }
+        });
+
+        window.editPronostic = async function(id) {
+            const { data, error } = await supabaseClient
+                .from('public_pronostics')
+                .select('*')
+                .eq('id', id)
+                .single();
+
+            if (error || !data) {
+                alert('Pronostic introuvable.');
+                return;
+            }
+
+            document.getElementById('pronosticId').value = data.id;
+            document.getElementById('matchTitle').value = data.match_title;
+            document.getElementById('competition').value = data.competition || '';
+            document.getElementById('prediction').value = data.prediction;
+            document.getElementById('analysis').value = data.analysis || '';
+            document.getElementById('expiresAt').value = data.expires_at || '';
+            document.getElementById('formTitle').textContent = 'Modifier le pronostic';
+            document.getElementById('pronosticForm').classList.add('active');
+        };
+
+        window.deletePronostic = async function(id) {
+            if (!confirm('Supprimer ce pronostic ?')) return;
+            const { error } = await supabaseClient
+                .from('public_pronostics')
+                .delete()
+                .eq('id', id);
+            if (error) {
+                alert('Erreur suppression.');
+            } else {
+                loadPronostics();
+            }
+        };
+
+        (async function() {
+            if (await checkAdmin()) {
+                loadPronostics();
+            }
+        })();
+    </script>
+</body>
+</html>
