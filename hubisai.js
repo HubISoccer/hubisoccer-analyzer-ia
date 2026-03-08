@@ -1,4 +1,4 @@
-// ========== HUBISAI.JS – VERSION FINALE (MENU CORRIGÉ) ==========
+// ========== HUBISAI.JS – VERSION FINALE AVEC SUPABASE (CORRIGÉE) ==========
 
 // Configuration Supabase
 const supabaseUrl = 'https://hlszrqnrzfvzjwindwpw.supabase.co';
@@ -67,10 +67,11 @@ const competitionsData = {
     }
 };
 
-// -------------------- GESTION DE L'UTILISATEUR --------------------
+// -------------------- VARIABLES GLOBALES --------------------
 let currentUser = null;
 let credits = 0;
 
+// -------------------- FONCTIONS UTILISATEUR --------------------
 async function checkUser() {
     const { data: { user } } = await supabaseClient.auth.getUser();
     currentUser = user;
@@ -120,6 +121,15 @@ function updateCreditDisplay() {
     const creditSpan = document.getElementById('creditDisplay');
     if (creditSpan) creditSpan.textContent = credits.toFixed(1);
 }
+
+// Déconnexion
+document.addEventListener('click', async (e) => {
+    if (e.target.id === 'logoutBtn') {
+        e.preventDefault();
+        await supabaseClient.auth.signOut();
+        window.location.reload();
+    }
+});
 
 // -------------------- SÉLECTION DU TYPE D'ANALYSE --------------------
 const radioAnalysis = document.querySelectorAll('input[name="analysisType"]');
@@ -275,7 +285,7 @@ async function saveAnalysis(type, inputData, result, cost) {
     if (error) console.error('Erreur sauvegarde analyse:', error);
 }
 
-// -------------------- HISTORIQUE LOCAL --------------------
+// -------------------- HISTORIQUE LOCAL (en attendant de charger depuis BDD) --------------------
 let history = [];
 
 function loadHistory() {
@@ -356,6 +366,7 @@ document.getElementById('calcBtn').addEventListener('click', async function() {
         return;
     }
 
+    // Récupérer les données saisies
     const inputData = {
         min: document.getElementById('min').value,
         score: document.getElementById('score').value,
@@ -398,15 +409,18 @@ document.getElementById('calcBtn').addEventListener('click', async function() {
 
     displayHtml += `<button id="saveResultBtn" class="btn-small" style="width:100%; margin-top:15px;">💾 ARCHIVER</button>`;
 
+    // Débiter et sauvegarder
     const debited = await debitCredit(cost);
     if (!debited) return;
 
     await saveAnalysis(analysisType, inputData, result, cost);
 
+    // Afficher le résultat
     const resultDiv = document.getElementById('finalResult');
     resultDiv.style.display = 'block';
     resultDiv.innerHTML = displayHtml;
 
+    // Attacher l'événement au bouton "Archiver"
     document.getElementById('saveResultBtn')?.addEventListener('click', function() {
         const selected = document.querySelector('input[name="analysisType"]:checked');
         const typeName = selected ? selected.nextElementSibling.innerText.split('-')[0].trim() : 'Analyse';
@@ -415,18 +429,8 @@ document.getElementById('calcBtn').addEventListener('click', async function() {
     });
 });
 
-// -------------------- DÉCONNEXION --------------------
-document.addEventListener('click', async (e) => {
-    if (e.target.id === 'logoutBtn') {
-        e.preventDefault();
-        await supabaseClient.auth.signOut();
-        window.location.reload();
-    }
-});
-
-// -------------------- INITIALISATION AU CHARGEMENT DU DOM --------------------
+// -------------------- MENU MOBILE --------------------
 document.addEventListener('DOMContentLoaded', function() {
-    // Menu mobile
     const menuToggle = document.getElementById('menuToggle');
     const navLinks = document.getElementById('navLinks');
 
