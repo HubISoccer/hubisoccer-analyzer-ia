@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Profil - HubISoccer AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="../hubisai.css">
+    <style>
+        .profile-container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+        }
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        .profile-info h2 {
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        .profile-info p {
+            color: var(--gray);
+        }
+        .credits-card {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .credits-card .label {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        .credits-card .value {
+            font-size: 2.5rem;
+            font-weight: 800;
+        }
+        .section-title {
+            color: var(--primary);
+            margin: 30px 0 20px;
+            border-left: 5px solid var(--gold);
+            padding-left: 15px;
+        }
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .history-table th {
+            text-align: left;
+            padding: 10px;
+            background: var(--light-gray);
+            color: var(--primary);
+        }
+        .history-table td {
+            padding: 10px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        .history-table tr:hover {
+            background: #f8fafc;
+        }
+        .status-badge {
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .status-gagne { background: #d4edda; color: #155724; }
+        .status-perdu { background: #f8d7da; color: #721c24; }
+        .status-attente { background: #fff3cd; color: #856404; }
+        .btn-recharge {
+            background: var(--gold);
+            color: black;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-recharge:hover {
+            background: var(--gold-dark);
+            transform: translateY(-2px);
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--gray);
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="../index.html" class="logo-link">
+            <img src="../img/logo-navbar.png" alt="HubISoccer" class="logo-nav">
+        </a>
+        <div class="nav-right">
+            <a href="../hubisai.html" class="btn-auth">← Retour à l'analyseur</a>
+        </div>
+    </nav>
+
+    <div class="profile-container" id="profileContainer">
+        <div class="loading">Chargement du profil...</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const supabaseUrl = 'https://hlszrqnrzfvzjwindwpw.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhsc3pycW5yemZ2emp3aW5kd3B3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTQ2NzYsImV4cCI6MjA4ODQ5MDY3Nn0.LXdNt0NWF_MlQy7MTclrdGl-RP7pfxl-xjtysIQEBXU';
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        async function loadProfile() {
+            const container = document.getElementById('profileContainer');
+            
+            const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+            if (userError || !user) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--danger);"></i>
+                        <p>Vous devez être connecté pour voir cette page.</p>
+                        <a href="login.html" class="btn-auth" style="margin-top: 20px;">Se connecter</a>
+                    </div>
+                `;
+                return;
+            }
+
+            const { data: profile, error: profileError } = await supabaseClient
+                .from('profiles')
+                .select('*')
+                .eq('id', user.id)
+                .single();
+
+            if (profileError) {
+                console.error('Erreur profil:', profileError);
+                container.innerHTML = '<div class="empty-state">Erreur chargement du profil.</div>';
+                return;
+            }
+
+            const { data: analyses, error: analysesError } = await supabaseClient
+                .from('analyses')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false })
+                .limit(20);
+
+            if (analysesError) console.error('Erreur analyses:', analysesError);
+
+            const { data: transactions, error: transError } = await supabaseClient
+                .from('transactions')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false })
+                .limit(10);
+
+            if (transError) console.error('Erreur transactions:', transError);
+
+            const initiale = (profile.nom || user.email)[0].toUpperCase();
+
+            let analysesHtml = '';
+            if (analyses && analyses.length > 0) {
+                analysesHtml = analyses.map(a => {
+                    const date = new Date(a.created_at).toLocaleString();
+                    const resultObj = a.result || {};
+                    const resultText = resultObj.dc ? `${resultObj.dc} / ${resultObj.buts || ''}` : 'Analyse simple';
+                    return `<tr>
+                        <td>${date}</td>
+                        <td>${a.type}</td>
+                        <td>${resultText}</td>
+                        <td>${a.credits_cost}</td>
+                    </tr>`;
+                }).join('');
+            } else {
+                analysesHtml = `<tr><td colspan="4" class="empty-state">Aucune analyse effectuée.</td></tr>`;
+            }
+
+            let transactionsHtml = '';
+            if (transactions && transactions.length > 0) {
+                transactionsHtml = transactions.map(t => {
+                    const date = new Date(t.created_at).toLocaleString();
+                    const statusClass = t.status === 'success' ? 'status-gagne' : (t.status === 'pending' ? 'status-attente' : 'status-perdu');
+                    return `<tr>
+                        <td>${date}</td>
+                        <td>${t.amount_fcfa} FCFA</td>
+                        <td>${t.credits_earned}</td>
+                        <td><span class="status-badge ${statusClass}">${t.status}</span></td>
+                    </tr>`;
+                }).join('');
+            } else {
+                transactionsHtml = `<tr><td colspan="4" class="empty-state">Aucune transaction.</td></tr>`;
+            }
+
+            container.innerHTML = `
+                <div class="profile-header">
+                    <div class="profile-avatar">${initiale}</div>
+                    <div class="profile-info">
+                        <h2>${profile.nom || 'Utilisateur'}</h2>
+                        <p>${user.email}</p>
+                    </div>
+                </div>
+
+                <div class="credits-card">
+                    <span class="label"><i class="fas fa-coins"></i> Solde HubiSai</span>
+                    <span class="value">${profile.credits.toFixed(1)}</span>
+                    <a href="#" class="btn-recharge" id="rechargeBtn">Recharger</a>
+                </div>
+
+                <h3 class="section-title">Historique des analyses</h3>
+                <table class="history-table">
+                    <thead>
+                        <tr><th>Date</th><th>Type</th><th>Résultat</th><th>Coût</th></tr>
+                    </thead>
+                    <tbody>
+                        ${analysesHtml}
+                    </tbody>
+                </table>
+
+                <h3 class="section-title">Transactions</h3>
+                <table class="history-table">
+                    <thead>
+                        <tr><th>Date</th><th>Montant</th><th>Crédits</th><th>Statut</th></tr>
+                    </thead>
+                    <tbody>
+                        ${transactionsHtml}
+                    </tbody>
+                </table>
+            `;
+
+            document.getElementById('rechargeBtn')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                alert('Redirection vers FedaPay (simulation)');
+            });
+        }
+
+        loadProfile();
+    </script>
+</body>
+</html>
