@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Utilisateurs - HubISoccer AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="../hubisai.css">
+    <style>
+        .admin-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .admin-header h1 {
+            color: var(--primary);
+        }
+        .search-box {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .search-box input {
+            padding: 10px 15px;
+            border: 2px solid var(--light-gray);
+            border-radius: 30px;
+            width: 250px;
+        }
+        .search-box button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+        }
+        .table-container {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            text-align: left;
+            padding: 15px 10px;
+            background: var(--light-gray);
+            color: var(--primary);
+        }
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        tr:hover {
+            background: #f8fafc;
+        }
+        .credits-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .credits-value {
+            font-weight: 600;
+            min-width: 60px;
+        }
+        .credits-edit {
+            display: flex;
+            gap: 5px;
+        }
+        .credits-edit input {
+            width: 80px;
+            padding: 5px;
+            border: 1px solid var(--light-gray);
+            border-radius: 5px;
+        }
+        .btn-update {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        .btn-update:hover {
+            background: var(--primary-light);
+        }
+        .btn-cancel {
+            background: var(--light-gray);
+            color: var(--dark);
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--gray);
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        .message {
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="../index.html" class="logo-link">
+            <img src="../img/logo-navbar.png" alt="HubISoccer" class="logo-nav">
+        </a>
+        <div class="nav-right">
+            <a href="pronostics-admin.html" class="btn-auth">Pronostics</a>
+            <a href="utilisateurs.html" class="btn-auth gold">Utilisateurs</a>
+            <a href="../hubisai.html" class="btn-auth">← Retour</a>
+        </div>
+    </nav>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>Gestion des utilisateurs</h1>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Rechercher par email ou nom">
+                <button id="searchBtn"><i class="fas fa-search"></i> Rechercher</button>
+            </div>
+        </div>
+
+        <div id="message" class="message"></div>
+
+        <div class="table-container">
+            <table id="usersTable">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Nom</th>
+                        <th>Crédits</th>
+                        <th>Date d'inscription</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="usersList">
+                    <tr><td colspan="5" class="loading">Chargement...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Configuration Supabase
+        const supabaseUrl = 'https://hlszrqnrzfvzjwindwpw.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhsc3pycW5yemZ2emp3aW5kd3B3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTQ2NzYsImV4cCI6MjA4ODQ5MDY3Nn0.LXdNt0NWF_MlQy7MTclrdGl-RP7pfxl-xjtysIQEBXU';
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Liste des administrateurs (à compléter avec ton email)
+        const ADMIN_EMAILS = ['tonemail@example.com']; // ← REMPLACE ICI
+
+        let allUsers = []; // Pour conserver tous les utilisateurs (utile pour la recherche)
+
+        // Vérifier si l'utilisateur connecté est admin
+        async function checkAdmin() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) {
+                window.location.href = '../auth/login.html';
+                return false;
+            }
+            if (!ADMIN_EMAILS.includes(user.email)) {
+                alert('Accès non autorisé.');
+                window.location.href = '../hubisai.html';
+                return false;
+            }
+            return true;
+        }
+
+        // Charger tous les profils utilisateurs
+        async function loadUsers() {
+            const tbody = document.getElementById('usersList');
+            tbody.innerHTML = '<tr><td colspan="5" class="loading">Chargement...</td></tr>';
+
+            const { data, error } = await supabaseClient
+                .from('profiles')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('Erreur chargement utilisateurs:', error);
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Erreur de chargement.</td></tr>';
+                return;
+            }
+
+            allUsers = data || [];
+            renderUsers(allUsers);
+        }
+
+        // Afficher les utilisateurs dans le tableau
+        function renderUsers(users) {
+            const tbody = document.getElementById('usersList');
+            if (users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Aucun utilisateur trouvé.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = users.map(user => {
+                const date = new Date(user.created_at).toLocaleDateString('fr-FR');
+                return `
+                    <tr id="user-${user.id}">
+                        <td>${user.email || 'N/A'}</td>
+                        <td>${user.nom || '-'}</td>
+                        <td>
+                            <div class="credits-cell">
+                                <span class="credits-value" id="credits-${user.id}">${user.credits}</span>
+                                <div class="credits-edit" id="edit-${user.id}" style="display:none;">
+                                    <input type="number" id="input-${user.id}" value="${user.credits}" step="0.5" min="0">
+                                    <button class="btn-update" onclick="updateCredits('${user.id}')">OK</button>
+                                    <button class="btn-cancel" onclick="cancelEdit('${user.id}')">X</button>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${date}</td>
+                        <td>
+                            <button class="btn-update" onclick="showEdit('${user.id}')"><i class="fas fa-edit"></i> Modifier crédits</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Afficher le champ d'édition pour un utilisateur
+        window.showEdit = function(userId) {
+            document.getElementById(`credits-${userId}`).style.display = 'none';
+            document.getElementById(`edit-${userId}`).style.display = 'flex';
+        };
+
+        // Annuler l'édition
+        window.cancelEdit = function(userId) {
+            document.getElementById(`credits-${userId}`).style.display = 'inline';
+            document.getElementById(`edit-${userId}`).style.display = 'none';
+        };
+
+        // Mettre à jour les crédits
+        window.updateCredits = async function(userId) {
+            const input = document.getElementById(`input-${userId}`);
+            const newCredits = parseFloat(input.value);
+            if (isNaN(newCredits) || newCredits < 0) {
+                alert('Veuillez entrer un nombre valide (>=0).');
+                return;
+            }
+
+            const { error } = await supabaseClient
+                .from('profiles')
+                .update({ credits: newCredits })
+                .eq('id', userId);
+
+            if (error) {
+                console.error('Erreur mise à jour crédits:', error);
+                showMessage('Erreur lors de la mise à jour.', 'error');
+            } else {
+                showMessage('Crédits mis à jour avec succès.', 'success');
+                // Mettre à jour l'affichage
+                document.getElementById(`credits-${userId}`).textContent = newCredits;
+                cancelEdit(userId);
+            }
+        };
+
+        // Afficher un message
+        function showMessage(text, type) {
+            const msgDiv = document.getElementById('message');
+            msgDiv.textContent = text;
+            msgDiv.className = `message ${type}`;
+            setTimeout(() => {
+                msgDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        // Recherche en direct
+        document.getElementById('searchBtn').addEventListener('click', () => {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            if (!searchTerm) {
+                renderUsers(allUsers);
+                return;
+            }
+            const filtered = allUsers.filter(u => 
+                (u.email && u.email.toLowerCase().includes(searchTerm)) ||
+                (u.nom && u.nom.toLowerCase().includes(searchTerm))
+            );
+            renderUsers(filtered);
+        });
+
+        // Initialisation
+        (async function() {
+            if (await checkAdmin()) {
+                loadUsers();
+            }
+        })();
+    </script>
+</body>
+</html>
