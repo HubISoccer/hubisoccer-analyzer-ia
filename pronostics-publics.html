@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pronostics du jour - HubISoccer AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="hubisai.css">
+    <style>
+        .pronostics-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .pronostics-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .pronostics-header h1 {
+            color: var(--primary);
+        }
+        .pronostics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .pronostic-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--light-gray);
+            transition: transform 0.3s;
+        }
+        .pronostic-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+        .pronostic-card .competition {
+            color: var(--gold);
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+        .pronostic-card .match {
+            color: var(--primary);
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+        .pronostic-card .prediction {
+            background: var(--primary-light);
+            color: white;
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 30px;
+            font-weight: 600;
+            margin: 10px 0;
+        }
+        .pronostic-card .analysis {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 10px;
+        }
+        .pronostic-card .date {
+            color: var(--gray);
+            font-size: 0.8rem;
+            text-align: right;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            color: var(--gray);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation (identique à hubisai.html) -->
+    <nav>
+        <a href="./" class="logo-link">
+            <img src="img/logo-navbar.png" alt="HubISoccer" class="logo-nav">
+        </a>
+        <div class="nav-right">
+            <select class="lang-picker" id="langSelect">
+                <option value="fr">🇫🇷 Français</option>
+                <!-- ... autres langues ... -->
+            </select>
+            <div class="nav-links" id="navLinks">
+                <a href="hubisai.html" class="btn-auth">Analyseur</a>
+                <a href="pronostics-publics.html" class="btn-auth gold">Pronostics</a>
+                <a href="auth/login.html" class="btn-auth" id="loginBtn">Connexion</a>
+                <a href="auth/signup.html" class="btn-auth gold" id="signupBtn">S'inscrire</a>
+                <a href="auth/profile.html" class="btn-auth" id="profileBtn" style="display:none;">Mon compte</a>
+                <a href="#" id="logoutBtn" style="display:none;">Déconnexion</a>
+            </div>
+            <button class="menu-toggle" id="menuToggle">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="pronostics-container">
+        <div class="pronostics-header">
+            <h1>Pronostics du jour</h1>
+            <p>Nos analyses exclusives pour vous aider</p>
+        </div>
+
+        <div id="pronosticsList" class="pronostics-grid">
+            <div class="loading">Chargement des pronostics...</div>
+        </div>
+    </div>
+
+    <footer>
+        <!-- Même footer que index.html -->
+        <div class="compliance-badges">
+            <div class="badge-item">Vous aidez à mieux parier</div>
+            <div class="badge-item">Conseils paris sportifs</div>
+        </div>
+        <div class="contact-box">
+            <a href="tel:+2290197208188" class="contact-item">📞 +229 01 97 20 81 88</a>
+            <a href="mailto:contact@hubisoccer.com" class="contact-item">📧 hubisoccer@gmail.com</a>
+        </div>
+        <div class="legal">
+            <p><strong>HubISoccer - The Hub of Inspiration of Soccer</strong></p>
+            <p>RCCM : RB/ABC/24 A 111814 | IFU : 0201910800236</p>
+            <p>© 2026 HubISoccer - Ozawa. Tous droits réservés.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const supabaseUrl = 'https://hlszrqnrzfvzjwindwpw.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhsc3pycW5yemZ2emp3aW5kd3B3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTQ2NzYsImV4cCI6MjA4ODQ5MDY3Nn0.LXdNt0NWF_MlQy7MTclrdGl-RP7pfxl-xjtysIQEBXU';
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        async function loadPronostics() {
+            const listDiv = document.getElementById('pronosticsList');
+            
+            // Récupérer les pronostics actifs (is_active = true) et non expirés
+            const today = new Date().toISOString().split('T')[0];
+            const { data, error } = await supabaseClient
+                .from('public_pronostics')
+                .select('*')
+                .eq('is_active', true)
+                .or(`expires_at.is.null,expires_at.gte.${today}`)
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('Erreur chargement pronostics:', error);
+                listDiv.innerHTML = '<div class="empty-state">Erreur de chargement.</div>';
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                listDiv.innerHTML = '<div class="empty-state">Aucun pronostic disponible pour le moment.</div>';
+                return;
+            }
+
+            listDiv.innerHTML = data.map(p => {
+                const date = new Date(p.created_at).toLocaleDateString('fr-FR');
+                return `
+                    <div class="pronostic-card">
+                        ${p.competition ? `<div class="competition">${p.competition}</div>` : ''}
+                        <div class="match">${p.match_title}</div>
+                        <div class="prediction">${p.prediction}</div>
+                        ${p.analysis ? `<div class="analysis">${p.analysis}</div>` : ''}
+                        <div class="date">Publié le ${date}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        loadPronostics();
+
+        // Gestion du menu mobile (identique aux autres pages)
+        document.getElementById('menuToggle')?.addEventListener('click', function() {
+            document.getElementById('navLinks').classList.toggle('active');
+            this.classList.toggle('open');
+        });
+    </script>
+</body>
+</html>
