@@ -311,13 +311,27 @@ footer {
     padding: 8px 20px;
     border-radius: 40px;
     color: var(--gold);
+    border: 1px solid rgba(255,204,0,0.3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.8rem;
+}
+.contact-box {
+    margin-bottom: 30px;
 }
 .contact-item {
     color: var(--gold);
     text-decoration: none;
     margin: 0 15px;
+    font-weight: 500;
+    transition: color 0.3s;
 }
-.legal p { font-size: 0.8rem; color: rgba(255,255,255,0.5); }
+.contact-item:hover { color: white; }
+.legal p {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.5);
+    margin: 5px 0;
+}
 
 @media (max-width: 768px) {
     .nav-links {
