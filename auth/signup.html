@@ -73,7 +73,6 @@
             <a href="../hubisai.html" class="btn-auth">← Retour à l'analyseur</a>
         </div>
     </nav>
-
     <div class="auth-container">
         <h2>Inscription</h2>
         <div id="message" class="message"></div>
@@ -87,14 +86,11 @@
             <a href="login.html">Déjà un compte ? Se connecter</a>
         </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const supabaseUrl = 'https://hlszrqnrzfvzjwindwpw.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhsc3pycW5yemZ2emp3aW5kd3B3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTQ2NzYsImV4cCI6MjA4ODQ5MDY3Nn0.LXdNt0NWF_MlQy7MTclrdGl-RP7pfxl-xjtysIQEBXU';
-        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey); document.getElementById('signupForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const nom = document.getElementById('nom').value;
             const email = document.getElementById('email').value;
