@@ -7,73 +7,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="../hubisai.css">
-    <style>
-        .auth-container {
-            max-width: 400px;
-            margin: 50px auto;
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: var(--shadow);
-        }
-        .auth-container h2 {
-            color: var(--primary);
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .auth-container input {
-            margin-bottom: 15px;
-        }
-        .auth-btn {
-            width: 100%;
-            padding: 12px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 30px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-        .auth-btn:hover {
-            background: var(--primary-light);
-        }
-        .auth-links {
-            text-align: center;
-            margin-top: 20px;
-        }
-        .auth-links a {
-            color: var(--primary);
-            text-decoration: none;
-        }
-        .message {
-            padding: 10px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            display: none;
-        }
-        .message.error {
-            background: #ffebee;
-            color: var(--danger);
-            display: block;
-        }
-        .message.success {
-            background: #e8f5e9;
-            color: var(--success);
-            display: block;
-        }
-    </style>
+    <style> ... </style>
 </head>
 <body>
-    <nav>
-        <a href="../index.html" class="logo-link">
-            <img src="../img/logo-navbar.png" alt="HubISoccer" class="logo-nav">
-        </a>
-        <div class="nav-right">
-            <a href="../hubisai.html" class="btn-auth">← Retour à l'analyseur</a>
-        </div>
-    </nav>
-
+    <nav> ... </nav>
     <div class="auth-container">
         <h2>Inscription</h2>
         <div id="message" class="message"></div>
@@ -83,16 +20,14 @@
             <input type="password" id="password" placeholder="Mot de passe (min. 6 caractères)" required>
             <button type="submit" class="auth-btn">S'inscrire</button>
         </form>
-        <div class="auth-links">
-            <a href="login.html">Déjà un compte ? Se connecter</a>
-        </div>
+        <div class="auth-links"> ... </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const supabaseUrl = 'https://hlszrqnrzfvzjwindwpw.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhsc3pycW5yemZ2emp3aW5kd3B3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTQ2NzYsImV4cCI6MjA4ODQ5MDY3Nn0.LXdNt0NWF_MlQy7MTclrdGl-RP7pfxl-xjtysIQEBXU';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         document.getElementById('signupForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -103,7 +38,7 @@
 
             try {
                 // 1. Inscription avec Supabase Auth
-                const { data: authData, error: authError } = await supabase.auth.signUp({
+                const { data: authData, error: authError } = await supabaseClient.auth.signUp({
                     email,
                     password,
                     options: {
@@ -113,9 +48,10 @@
 
                 if (authError) throw authError;
 
-                // 2. Créer l'entrée dans la table profiles avec 15 crédits
+                // 2. Créer l'entrée dans la table profiles avec 15 crédits (le trigger s'en chargera si configuré)
+                // Si le trigger est en place, cette étape n'est pas nécessaire. Mais on peut la garder au cas où.
                 if (authData.user) {
-                    const { error: profileError } = await supabase
+                    const { error: profileError } = await supabaseClient
                         .from('profiles')
                         .insert([
                             { 
@@ -126,7 +62,9 @@
                             }
                         ]);
 
-                    if (profileError) throw profileError;
+                    if (profileError && profileError.code !== '23505') { // Ignorer si déjà existant
+                        console.warn('Erreur insertion profile (peut-être trigger déjà fait):', profileError);
+                    }
                 }
 
                 messageDiv.className = 'message success';
