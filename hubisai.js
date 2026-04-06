@@ -1,4 +1,4 @@
-// ========== HUBISAI.JS – VERSION FINALE AVEC SUPABASE (CORRIGÉE) ==========
+// ========== HUBISAI.JS – VERSION FINALE AVEC SUPABASE ET LOGOS ==========
 
 // Configuration Supabase
 const supabaseUrl = 'https://hlszrqnrzfvzjwindwpw.supabase.co';
@@ -285,7 +285,69 @@ async function saveAnalysis(type, inputData, result, cost) {
     if (error) console.error('Erreur sauvegarde analyse:', error);
 }
 
-// -------------------- HISTORIQUE LOCAL (en attendant de charger depuis BDD) --------------------
+// ================== NOUVEAU : GESTION DES ÉQUIPES AVEC API ==================
+let teamSearchTimeout = null;
+
+async function searchTeams(query, side) {
+    if (!query || query.length < 2) {
+        document.getElementById(`team${side}Suggestions`).style.display = 'none';
+        return;
+    }
+    const url = `https://www.thesportsdb.com/api/v1/json/3/searchteams.php?t=${encodeURIComponent(query)}`;
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+        const teams = data.teams || [];
+        const suggestionsDiv = document.getElementById(`team${side}Suggestions`);
+        suggestionsDiv.innerHTML = '';
+        if (teams.length === 0) {
+            suggestionsDiv.style.display = 'none';
+            return;
+        }
+        teams.forEach(team => {
+            const div = document.createElement('div');
+            const logo = team.strTeamBadge ? `<img src="${team.strTeamBadge}" onerror="this.style.display='none'">` : '';
+            div.innerHTML = `${logo} ${team.strTeam}`;
+            div.addEventListener('click', () => {
+                document.getElementById(`team${side}Input`).value = team.strTeam;
+                document.getElementById(`team${side}Name`).value = team.strTeam;
+                const logoUrl = team.strTeamBadge || '';
+                document.getElementById(`team${side}LogoUrl`).value = logoUrl;
+                const logoImg = document.getElementById(`team${side}Logo`);
+                if (logoUrl) {
+                    logoImg.src = logoUrl;
+                    logoImg.style.display = 'block';
+                } else {
+                    logoImg.style.display = 'none';
+                }
+                suggestionsDiv.style.display = 'none';
+            });
+            suggestionsDiv.appendChild(div);
+        });
+        suggestionsDiv.style.display = 'block';
+    } catch (error) {
+        console.error('Erreur recherche équipe:', error);
+    }
+}
+
+function setupTeamSearch(side) {
+    const input = document.getElementById(`team${side}Input`);
+    input.addEventListener('input', (e) => {
+        clearTimeout(teamSearchTimeout);
+        const query = e.target.value;
+        teamSearchTimeout = setTimeout(() => searchTeams(query, side), 300);
+    });
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest(`#team${side}Input`)) {
+            document.getElementById(`team${side}Suggestions`).style.display = 'none';
+        }
+    });
+}
+
+setupTeamSearch('A');
+setupTeamSearch('B');
+
+// -------------------- HISTORIQUE AVEC LOGOS --------------------
 let history = [];
 
 function loadHistory() {
@@ -305,18 +367,27 @@ function renderHistory() {
         list.innerHTML = '<p class="no-data">Aucun historique.</p>';
         return;
     }
-    list.innerHTML = history.slice().reverse().map(h => `
-        <div class="history-item" data-id="${h.id}">
-            <div>
-                <strong>${h.type} : ${h.result}</strong><br>
-                <small>${new Date(h.date).toLocaleString()}</small>
+    list.innerHTML = history.slice().reverse().map(h => {
+        const teamALogo = h.teamALogoUrl ? `<img src="${h.teamALogoUrl}" onerror="this.style.display='none'" style="width:30px;height:30px;">` : '';
+        const teamBLogo = h.teamBLogoUrl ? `<img src="${h.teamBLogoUrl}" onerror="this.style.display='none'" style="width:30px;height:30px;">` : '';
+        return `
+            <div class="history-item" data-id="${h.id}">
+                <div>
+                    <div class="team-logos">
+                        ${teamALogo} <span class="team-names">${h.teamAName || '?'}</span>
+                        vs
+                        ${teamBLogo} <span class="team-names">${h.teamBName || '?'}</span>
+                    </div>
+                    <strong>${h.type} : ${h.result}</strong><br>
+                    <small>${new Date(h.date).toLocaleString()}</small>
+                </div>
+                <div>
+                    <button class="history-win" data-id="${h.id}">✅</button>
+                    <button class="history-lose" data-id="${h.id}">❌</button>
+                </div>
             </div>
-            <div>
-                <button class="history-win" data-id="${h.id}">✅</button>
-                <button class="history-lose" data-id="${h.id}">❌</button>
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 document.getElementById('historyList')?.addEventListener('click', function(e) {
@@ -324,7 +395,6 @@ document.getElementById('historyList')?.addEventListener('click', function(e) {
     if (!btn) return;
     const id = parseInt(btn.dataset.id);
     if (isNaN(id)) return;
-
     if (btn.classList.contains('history-win')) {
         history = history.map(h => h.id === id ? {...h, status: 'GAGNÉ'} : h);
     } else if (btn.classList.contains('history-lose')) {
@@ -334,13 +404,17 @@ document.getElementById('historyList')?.addEventListener('click', function(e) {
     renderHistory();
 });
 
-function addHistory(type, resultText) {
+function addHistory(type, resultText, teamAName, teamBName, teamALogoUrl, teamBLogoUrl) {
     history.push({
         id: Date.now(),
         type: type,
         result: resultText,
         date: new Date().toISOString(),
-        status: 'Attente'
+        status: 'Attente',
+        teamAName: teamAName,
+        teamBName: teamBName,
+        teamALogoUrl: teamALogoUrl,
+        teamBLogoUrl: teamBLogoUrl
     });
     saveHistory();
     renderHistory();
@@ -360,13 +434,21 @@ document.getElementById('calcBtn').addEventListener('click', async function() {
         alert('Vous devez être connecté pour effectuer une analyse.');
         return;
     }
-
     if (!await hasEnoughCredit(cost)) {
         alert(`Crédits insuffisants. Il vous faut ${cost} HubiSai.`);
         return;
     }
 
-    // Récupérer les données saisies
+    const teamAName = document.getElementById('teamAName').value;
+    const teamBName = document.getElementById('teamBName').value;
+    const teamALogoUrl = document.getElementById('teamALogoUrl').value;
+    const teamBLogoUrl = document.getElementById('teamBLogoUrl').value;
+
+    if (!teamAName || !teamBName) {
+        alert('Veuillez sélectionner les deux équipes.');
+        return;
+    }
+
     const inputData = {
         min: document.getElementById('min').value,
         score: document.getElementById('score').value,
@@ -382,8 +464,10 @@ document.getElementById('calcBtn').addEventListener('click', async function() {
         formB: document.getElementById('formB').value,
         country: countrySelect.value,
         competition: compSelect.value,
-        nameA: document.getElementById('nameA').value,
-        nameB: document.getElementById('nameB').value
+        nameA: teamAName,
+        nameB: teamBName,
+        logoA: teamALogoUrl,
+        logoB: teamBLogoUrl
     };
 
     const result = calculatePrediction();
@@ -409,22 +493,19 @@ document.getElementById('calcBtn').addEventListener('click', async function() {
 
     displayHtml += `<button id="saveResultBtn" class="btn-small" style="width:100%; margin-top:15px;">💾 ARCHIVER</button>`;
 
-    // Débiter et sauvegarder
     const debited = await debitCredit(cost);
     if (!debited) return;
 
     await saveAnalysis(analysisType, inputData, result, cost);
 
-    // Afficher le résultat
     const resultDiv = document.getElementById('finalResult');
     resultDiv.style.display = 'block';
     resultDiv.innerHTML = displayHtml;
 
-    // Attacher l'événement au bouton "Archiver"
     document.getElementById('saveResultBtn')?.addEventListener('click', function() {
         const selected = document.querySelector('input[name="analysisType"]:checked');
         const typeName = selected ? selected.nextElementSibling.innerText.split('-')[0].trim() : 'Analyse';
-        addHistory(typeName, resultText);
+        addHistory(typeName, resultText, teamAName, teamBName, teamALogoUrl, teamBLogoUrl);
         alert('Pronostic archivé !');
     });
 });
@@ -455,17 +536,14 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('Menu mobile : éléments non trouvés');
     }
 
-    // Initialisation des écouteurs de radios
     radioAnalysis.forEach(radio => {
         radio.addEventListener('change', updateCostDisplay);
     });
     updateCostDisplay();
 
-    // Charger les données utilisateur et historique
     checkUser();
     loadHistory();
 
-    // Écouter les changements d'auth
     supabaseClient.auth.onAuthStateChange((event, session) => {
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
             checkUser();
