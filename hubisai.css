@@ -351,7 +351,7 @@ footer {
     .menu-toggle { display: flex; }
 }
 
-/* ===== AJOUTS POUR LA RECHERCHE D'ÉQUIPES ET LOGOS ===== */
+/* ===== AJOUTS POUR LA RECHERCHE D'ÉQUIPES ET LOGOS VRAI ===== */
 .team-search-container {
     position: relative;
 }
