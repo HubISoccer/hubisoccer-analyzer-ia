@@ -63,79 +63,30 @@
         <div class="section">
             <h2>🎯 Type d'analyse / pronostic</h2>
             <div class="analysis-selector">
-                <label class="analysis-option">
-                    <input type="radio" name="analysisType" value="simple" checked> 
-                    <span>📊 Analyse simple (sans pronostic) - <strong>0,5 HubiSai</strong></span>
-                </label>
-                <label class="analysis-option">
-                    <input type="radio" name="analysisType" value="dc"> 
-                    <span>⚖️ Double Chance uniquement - <strong>1 HubiSai</strong></span>
-                </label>
-                <label class="analysis-option">
-                    <input type="radio" name="analysisType" value="buts05"> 
-                    <span>🥅 +0,5 Buts - <strong>1 HubiSai</strong></span>
-                </label>
-                <label class="analysis-option">
-                    <input type="radio" name="analysisType" value="buts15"> 
-                    <span>⚽ +1,5 Buts - <strong>1 HubiSai</strong></span>
-                </label>
-                <label class="analysis-option">
-                    <input type="radio" name="analysisType" value="buts25"> 
-                    <span>⚽⚽ +2,5 Buts - <strong>1 HubiSai</strong></span>
-                </label>
-                <label class="analysis-option">
-                    <input type="radio" name="analysisType" value="totalTirs"> 
-                    <span>🎯 Total de tirs dans le match - <strong>1,5 HubiSai</strong></span>
-                </label>
-                <label class="analysis-option">
-                    <input type="radio" name="analysisType" value="combo"> 
-                    <span>🔥 Analyse complète (Double Chance + Buts) - <strong>2 HubiSai</strong></span>
-                </label>
-                <label class="analysis-option">
-                    <input type="radio" name="analysisType" value="full"> 
-                    <span>🏆 Tout (DC + Buts + Tirs + Conseils) - <strong>3 HubiSai</strong></span>
-                </label>
+                <label class="analysis-option"><input type="radio" name="analysisType" value="simple" checked> <span>📊 Analyse simple (sans pronostic) - <strong>0,5 HubiSai</strong></span></label>
+                <label class="analysis-option"><input type="radio" name="analysisType" value="dc"> <span>⚖️ Double Chance uniquement - <strong>1 HubiSai</strong></span></label>
+                <label class="analysis-option"><input type="radio" name="analysisType" value="buts05"> <span>🥅 +0,5 Buts - <strong>1 HubiSai</strong></span></label>
+                <label class="analysis-option"><input type="radio" name="analysisType" value="buts15"> <span>⚽ +1,5 Buts - <strong>1 HubiSai</strong></span></label>
+                <label class="analysis-option"><input type="radio" name="analysisType" value="buts25"> <span>⚽⚽ +2,5 Buts - <strong>1 HubiSai</strong></span></label>
+                <label class="analysis-option"><input type="radio" name="analysisType" value="totalTirs"> <span>🎯 Total de tirs dans le match - <strong>1,5 HubiSai</strong></span></label>
+                <label class="analysis-option"><input type="radio" name="analysisType" value="combo"> <span>🔥 Analyse complète (Double Chance + Buts) - <strong>2 HubiSai</strong></span></label>
+                <label class="analysis-option"><input type="radio" name="analysisType" value="full"> <span>🏆 Tout (DC + Buts + Tirs + Conseils) - <strong>3 HubiSai</strong></span></label>
             </div>
-            <div class="info-box" id="costDisplay">
-                Coût de l'analyse sélectionnée : <strong>0,5 HubiSai</strong>
-            </div>
+            <div class="info-box" id="costDisplay">Coût de l'analyse sélectionnée : <strong>0,5 HubiSai</strong></div>
         </div>
 
         <div class="section">
             <h2>1. Contexte du match</h2>
             <div class="grid-2">
-                <div>
-                    <label>Pays / Europe</label>
-                    <select id="countrySelect" class="full-width">
-                        <option value="">Sélectionnez</option>
-                        <option value="angleterre">🇬🇧 Angleterre</option>
-                        <option value="espagne">🇪🇸 Espagne</option>
-                        <option value="italie">🇮🇹 Italie</option>
-                        <option value="allemagne">🇩🇪 Allemagne</option>
-                        <option value="france">🇫🇷 France</option>
-                        <option value="portugal">🇵🇹 Portugal</option>
-                        <option value="paysbas">🇳🇱 Pays-Bas</option>
-                        <option value="bresil">🇧🇷 Brésil</option>
-                        <option value="belgique">🇧🇪 Belgique</option>
-                        <option value="turquie">🇹🇷 Turquie</option>
-                        <option value="europe">🇪🇺 Europe</option>
-                    </select>
-                </div>
-                <div>
-                    <label>Compétition</label>
-                    <select id="compSelect" class="full-width">
-                        <option value="">D'abord choisir un pays</option>
-                    </select>
-                </div>
+                <div><label>Pays / Europe</label><select id="countrySelect" class="full-width"><option value="">Sélectionnez</option><option value="angleterre">🇬🇧 Angleterre</option><option value="espagne">🇪🇸 Espagne</option><option value="italie">🇮🇹 Italie</option><option value="allemagne">🇩🇪 Allemagne</option><option value="france">🇫🇷 France</option><option value="portugal">🇵🇹 Portugal</option><option value="paysbas">🇳🇱 Pays-Bas</option><option value="bresil">🇧🇷 Brésil</option><option value="belgique">🇧🇪 Belgique</option><option value="turquie">🇹🇷 Turquie</option><option value="europe">🇪🇺 Europe</option></select></div>
+                <div><label>Compétition</label><select id="compSelect" class="full-width"><option value="">D'abord choisir un pays</option></select></div>
             </div>
             <div class="grid-2">
                 <div class="team-search-container">
                     <label>Équipe A (DOM)</label>
                     <input type="text" id="teamAInput" placeholder="Tapez le nom de l'équipe" autocomplete="off">
                     <div id="teamASuggestions" class="suggestions-list"></div>
-                    <div class="team-logo-container">
-                        <img id="teamALogo" class="team-logo" style="display:none;">
-                    </div>
+                    <div class="team-logo-container"><img id="teamALogo" class="team-logo" style="display:none;"></div>
                     <input type="hidden" id="teamAName" value="">
                     <input type="hidden" id="teamALogoUrl" value="">
                 </div>
@@ -143,90 +94,41 @@
                     <label>Équipe B (EXT)</label>
                     <input type="text" id="teamBInput" placeholder="Tapez le nom de l'équipe" autocomplete="off">
                     <div id="teamBSuggestions" class="suggestions-list"></div>
-                    <div class="team-logo-container">
-                        <img id="teamBLogo" class="team-logo" style="display:none;">
-                    </div>
+                    <div class="team-logo-container"><img id="teamBLogo" class="team-logo" style="display:none;"></div>
                     <input type="hidden" id="teamBName" value="">
                     <input type="hidden" id="teamBLogoUrl" value="">
                 </div>
             </div>
-            <div class="info-box">
-                <span>⚡ Enjeu : </span><span id="stakesDisplay">1.0</span>
-            </div>
+            <div class="info-box"><span>⚡ Enjeu : </span><span id="stakesDisplay">1.0</span></div>
         </div>
 
         <div class="section">
             <h2>2. État de forme (saison)</h2>
             <div class="grid-2">
-                <div class="team-box">
-                    <div class="team-header home-bg">STATS A</div>
-                    <label>Classement</label><input type="number" id="rankA" value="10">
-                    <label>Points</label><input type="number" id="ptsA" value="50">
-                    <label>Buts marqués</label><input type="number" id="gmA" value="30">
-                    <label>Buts encaissés</label><input type="number" id="gaA" value="20">
-                    <label>Forme (6 derniers : victoires)</label><input type="number" id="formA" max="6" value="3">
-                </div>
-                <div class="team-box">
-                    <div class="team-header away-bg">STATS B</div>
-                    <label>Classement</label><input type="number" id="rankB" value="12">
-                    <label>Points</label><input type="number" id="ptsB" value="45">
-                    <label>Buts marqués</label><input type="number" id="gmB" value="28">
-                    <label>Buts encaissés</label><input type="number" id="gaB" value="22">
-                    <label>Forme (6 derniers : victoires)</label><input type="number" id="formB" max="6" value="2">
-                </div>
+                <div class="team-box"><div class="team-header home-bg">STATS A</div><label>Classement</label><input type="number" id="rankA" value="10"><label>Points</label><input type="number" id="ptsA" value="50"><label>Buts marqués</label><input type="number" id="gmA" value="30"><label>Buts encaissés</label><input type="number" id="gaA" value="20"><label>Forme (6 derniers : victoires)</label><input type="number" id="formA" max="6" value="3"></div>
+                <div class="team-box"><div class="team-header away-bg">STATS B</div><label>Classement</label><input type="number" id="rankB" value="12"><label>Points</label><input type="number" id="ptsB" value="45"><label>Buts marqués</label><input type="number" id="gmB" value="28"><label>Buts encaissés</label><input type="number" id="gaB" value="22"><label>Forme (6 derniers : victoires)</label><input type="number" id="formB" max="6" value="2"></div>
             </div>
         </div>
 
         <div class="section">
             <h2>3. Données en direct (live)</h2>
+            <div class="grid-2"><div><label>Minute actuelle</label><input type="number" id="min" value="30"></div><div><label>Score (ex: 1-0)</label><input type="text" id="score" value="0-0"></div></div>
             <div class="grid-2">
-                <div><label>Minute actuelle</label><input type="number" id="min" value="30"></div>
-                <div><label>Score (ex: 1-0)</label><input type="text" id="score" value="0-0"></div>
-            </div>
-            <div class="grid-2">
-                <div class="team-box">
-                    <div class="team-header home-bg">LIVE A</div>
-                    <label>Tirs totaux</label><input type="number" id="tA" value="8">
-                    <label>Tirs cadrés</label><input type="number" id="tcA" value="3">
-                    <label>Corners</label><input type="number" id="cA" value="4">
-                    <label>Attaques dangereuses</label><input type="number" id="adA" value="12">
-                </div>
-                <div class="team-box">
-                    <div class="team-header away-bg">LIVE B</div>
-                    <label>Tirs totaux</label><input type="number" id="tB" value="6">
-                    <label>Tirs cadrés</label><input type="number" id="tcB" value="2">
-                    <label>Corners</label><input type="number" id="cB" value="3">
-                    <label>Attaques dangereuses</label><input type="number" id="adB" value="9">
-                </div>
+                <div class="team-box"><div class="team-header home-bg">LIVE A</div><label>Tirs totaux</label><input type="number" id="tA" value="8"><label>Tirs cadrés</label><input type="number" id="tcA" value="3"><label>Corners</label><input type="number" id="cA" value="4"><label>Attaques dangereuses</label><input type="number" id="adA" value="12"></div>
+                <div class="team-box"><div class="team-header away-bg">LIVE B</div><label>Tirs totaux</label><input type="number" id="tB" value="6"><label>Tirs cadrés</label><input type="number" id="tcB" value="2"><label>Corners</label><input type="number" id="cB" value="3"><label>Attaques dangereuses</label><input type="number" id="adB" value="9"></div>
             </div>
         </div>
 
         <button class="main-btn" id="calcBtn">⚡ CALCULER PRONOSTIC</button>
-
         <div id="finalResult" class="result-card" style="display:none;"></div>
-
-        <div class="section">
-            <h2>📊 Historique des analyses</h2>
-            <div id="historyList" class="history-list"></div>
-        </div>
+        <div class="section"><h2>📊 Historique des analyses</h2><div id="historyList" class="history-list"></div></div>
 
         <footer>
-            <div class="compliance-badges">
-                <div class="badge-item">Vous aidez à mieux parier</div>
-                <div class="badge-item">Conseils paris sportifs</div>
-            </div>
-            <div class="contact-box">
-                <a href="tel:+2290197208188" class="contact-item">📞 +229 01 97 20 81 88</a>
-                <a href="mailto:contact@hubisoccer.com" class="contact-item">📧 hubisoccer@gmail.com</a>
-            </div>
-            <div class="legal">
-                <p><strong>HubISoccer - The Hub of Inspiration of Soccer</strong></p>
-                <p>RCCM : RB/ABC/24 A 111814 | IFU : 0201910800236</p>
-                <p>© 2026 HubISoccer - Ozawa. Tous droits réservés.</p>
-            </div>
+            <div class="compliance-badges"><div class="badge-item">Vous aidez à mieux parier</div><div class="badge-item">Conseils paris sportifs</div></div>
+            <div class="contact-box"><a href="tel:+2290197208188" class="contact-item">📞 +229 01 97 20 81 88</a><a href="mailto:contact@hubisoccer.com" class="contact-item">📧 hubisoccer@gmail.com</a></div>
+            <div class="legal"><p><strong>HubISoccer - The Hub of Inspiration of Soccer</strong></p><p>RCCM : RB/ABC/24 A 111814 | IFU : 0201910800236</p><p>© 2026 HubISoccer - Ozawa. Tous droits réservés.</p></div>
         </footer>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="hubisai.js"></script>
 </body>
