@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="hubisai.css">
 </head>
 <body>
-    <!-- Navigation -->
+    <!-- Navigation (inchangée) -->
     <nav>
         <a href="./" class="logo-link">
             <img src="img/logo-navbar.png" alt="HubISoccer" class="logo-nav">
@@ -56,13 +56,12 @@
     </nav>
 
     <div class="container">
-        <!-- En-tête -->
         <header>
             <h1>HubISoccer <span class="gold">AI ULTRA</span></h1>
             <p class="subtitle">Analyse multicritères • Contexte championnat • Crédits HubiSai</p>
         </header>
 
-        <!-- Section 0 : Choix du type d'analyse -->
+        <!-- Section 0 : Choix du type d'analyse (inchangée) -->
         <div class="section">
             <h2>🎯 Type d'analyse / pronostic</h2>
             <div class="analysis-selector">
@@ -132,14 +131,27 @@
                     </select>
                 </div>
             </div>
+            <!-- Section Équipes modifiée -->
             <div class="grid-2">
-                <div>
+                <div class="team-search-container">
                     <label>Équipe A (DOM)</label>
-                    <input type="text" id="nameA" placeholder="Ex: Real Madrid">
+                    <input type="text" id="teamAInput" placeholder="Tapez le nom de l'équipe" autocomplete="off">
+                    <div id="teamASuggestions" class="suggestions-list"></div>
+                    <div class="team-logo-container">
+                        <img id="teamALogo" class="team-logo" style="display:none;">
+                    </div>
+                    <input type="hidden" id="teamAName" value="">
+                    <input type="hidden" id="teamALogoUrl" value="">
                 </div>
-                <div>
+                <div class="team-search-container">
                     <label>Équipe B (EXT)</label>
-                    <input type="text" id="nameB" placeholder="Ex: Barça">
+                    <input type="text" id="teamBInput" placeholder="Tapez le nom de l'équipe" autocomplete="off">
+                    <div id="teamBSuggestions" class="suggestions-list"></div>
+                    <div class="team-logo-container">
+                        <img id="teamBLogo" class="team-logo" style="display:none;">
+                    </div>
+                    <input type="hidden" id="teamBName" value="">
+                    <input type="hidden" id="teamBLogoUrl" value="">
                 </div>
             </div>
             <div class="info-box">
@@ -147,7 +159,7 @@
             </div>
         </div>
 
-        <!-- Section 2 : État de forme (saison) -->
+        <!-- Section 2 : État de forme (inchangée) -->
         <div class="section">
             <h2>2. État de forme (saison)</h2>
             <div class="grid-2">
@@ -170,7 +182,7 @@
             </div>
         </div>
 
-        <!-- Section 3 : Données en direct (live) -->
+        <!-- Section 3 : Données en direct (inchangée) -->
         <div class="section">
             <h2>3. Données en direct (live)</h2>
             <div class="grid-2">
@@ -195,19 +207,16 @@
             </div>
         </div>
 
-        <!-- Bouton de calcul -->
         <button class="main-btn" id="calcBtn">⚡ CALCULER PRONOSTIC</button>
 
-        <!-- Résultat -->
         <div id="finalResult" class="result-card" style="display:none;"></div>
 
-        <!-- Historique -->
+        <!-- Section Historique (adaptée pour afficher les logos) -->
         <div class="section">
             <h2>📊 Historique des analyses</h2>
             <div id="historyList" class="history-list"></div>
         </div>
 
-        <!-- Footer -->
         <footer>
             <div class="compliance-badges">
                 <div class="badge-item">Vous aidez à mieux parier</div>
@@ -225,7 +234,6 @@
         </footer>
     </div>
 
-    <!-- Chargement de Supabase puis du script principal -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="hubisai.js"></script>
 </body>
