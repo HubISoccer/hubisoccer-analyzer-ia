@@ -1,5 +1,4 @@
 // ========== HUBISAI.JS – VERSION FINALE AVEC SUPABASE ET LOGOS ==========
-
 // Configuration Supabase
 const supabaseUrl = 'https://hlszrqnrzfvzjwindwpw.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhsc3pycW5yemZ2emp3aW5kd3B3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTQ2NzYsImV4cCI6MjA4ODQ5MDY3Nn0.LXdNt0NWF_MlQy7MTclrdGl-RP7pfxl-xjtysIQEBXU';
@@ -66,7 +65,6 @@ const competitionsData = {
         "UEFA Conference League (Élimination directe)": { stakes: 1.6, type: "europe-knockout" }
     }
 };
-
 // -------------------- VARIABLES GLOBALES --------------------
 let currentUser = null;
 let credits = 0;
